@@ -1,0 +1,9 @@
+ver 1.0.3, Sep 26, 2018
+  moved from subversion to github
+
+ver 1.0.2, Jan 11, 2018
+  fixed issue with failure to find some DOID terms in db
+
+ver 1.0.1, July 6, 2017
+  fixed deletion of stale annotations in order to not delete annotations created by DoAnnotator pipeline
+  added mtutaj@mcw.edu to the list of email recipients

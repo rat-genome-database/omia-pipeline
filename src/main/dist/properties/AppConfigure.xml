@@ -1,0 +1,72 @@
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<bean id="main" class="edu.mcw.rgd.OMIAPipeline.Manager">
+		<property name="version" value="OMIA Pipeline v 1.0.3 as of Sep 26, 2018" />
+		<property name="omiaFileDownloader" ref="omiaFileDownloader"/>
+		<property name="xmlParser" ref="xmlParser"/>
+		<property name="tabDelimetedTextParser" ref="tabDelimetedTextParser"/>
+		<property name="excelReader" ref="excelReader"/>
+		<property name="dao" ref="dao"/>
+		<property name="maxNumberOfPubmedIds" value="150"/>
+		<property name="speciesKeyForDog" value="9615"/>
+		<property name="stopProcessingIfNoNewFiles" value="false"/>
+	</bean>
+
+	<bean id="omiaFileDownloader" class="edu.mcw.rgd.OMIAPipeline.OmiaFileDownloader">
+		<property name="externalCausalMutationFile" value="http://omia.angis.org.au/curate/causal_mutations/?format=gene_table"/>
+		<property name="externalXmlFile" value="http://omia.angis.org.au/dumps/omia.xml.gz"/>
+		<property name="appendDateStamp" value="true"/>
+		<property name="useCompression" value="false"/>
+		<property name="maxNumberOfLocalFiles" value="5"/>
+	</bean>
+	
+	<bean id="dao" class="edu.mcw.rgd.OMIAPipeline.Dao">
+		<property name="omiaDataSourceName" value="OMIA"/>
+		<property name="omiaEvidenceCode" value="IEA"/>
+		<property name="omiaUserKey" value="444"/>
+		<property name="refRgdId" value="12801476"/>
+		<property name="timeCriteriaForObsoloteAnnotationDeletion" value="5"/>
+		<property name="useGeneSymbolForAnnotation" value="true"/>
+	</bean>
+	
+	<bean id="xmlParser" class="edu.mcw.rgd.OMIAPipeline.XmlParser">
+		<property name="tableElementNameInXML" value="table_data"/>
+		<property name="nameAttributeNameInXML" value="name"/>
+		<property name="rowElementNameInXML" value="row"/>
+		<property name="fieldElementNameInXML" value="field"/>
+		<property name="pheneTableNameInXML" value="Phene"/>
+		<property name="omiaIdFieldNameInXML" value="omia_id"/>
+		<property name="speciesIdFieldNameInXML" value="gb_species_id"/>
+		<property name="omiaGroupTableNameInXML" value="OMIA_Group"/>
+		<property name="omiaGroupFieldNameInXML" value="group_name"/>
+		<property name="pheneGeneTableNameInXml" value="Phene_Gene"/>
+		<property name="pheneIdFieldNameInXML" value="phene_id"/>
+		<property name="geneIdFieldNameInXML" value="gene_id"/>
+		<property name="genesTableNameInXml" value="Genes_gb"/>
+		<property name="geneSymbolFieldNameInXML" value="symbol"/>
+		<property name="articlePheneTableNameInXml" value="Article_Phene"/>
+		<property name="articlesTableNameInXml" value="Articles"/>
+		<property name="articleIdFieldNameInXML" value="article_id"/>
+		<property name="pubmedIdFieldNameInXML" value="pubmed_id"/>
+	</bean>
+	
+	<bean id="tabDelimetedTextParser" class="edu.mcw.rgd.OMIAPipeline.TabDelimetedTextParser">
+		<property name="textForNullNcbiGeneId" value="None"/>
+		<property name="columnNoForGeneSymbol" value="0"/>
+		<property name="columnNoForNcbiGeneId" value="1"/>
+		<property name="columnNoForOmiaId" value="2"/>
+		<property name="columnNoForTaxonomyId" value="3"/>
+		<property name="columnNoForPheneName" value="5"/>
+		<property name="oldNewNcbiGeneIdMappingFileName" value="old_new_ncbi_gene_id_pairs.txt"/>
+		<property name="columnNoForOldNcbiGeneId" value="0"/>
+		<property name="columnNoForNewNcbiGeneId" value="1"/>
+	</bean>
+	
+	<bean id="excelReader" class="edu.mcw.rgd.OMIAPipeline.ExcelReader">
+		<property name="rgdOmiaMatchingFileName" value="RGD_OMIA_matching.xlsx"/>
+		<property name="columnNoForPheneId" value="0"/>
+		<property name="columnNoForPheneName" value="1"/>
+		<property name="columnNoForRgdAccId" value="2"/>
+
+	</bean>
+</beans>
