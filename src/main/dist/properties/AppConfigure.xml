@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="main" class="edu.mcw.rgd.OMIAPipeline.Manager">
-		<property name="version" value="OMIA Pipeline v 1.0.3 as of Sep 26, 2018" />
+		<property name="version" value="OMIA Pipeline v 1.0.4 as of Nov 29, 2018" />
 		<property name="omiaFileDownloader" ref="omiaFileDownloader"/>
 		<property name="xmlParser" ref="xmlParser"/>
 		<property name="tabDelimetedTextParser" ref="tabDelimetedTextParser"/>
@@ -13,8 +13,8 @@
 	</bean>
 
 	<bean id="omiaFileDownloader" class="edu.mcw.rgd.OMIAPipeline.OmiaFileDownloader">
-		<property name="externalCausalMutationFile" value="http://omia.angis.org.au/curate/causal_mutations/?format=gene_table"/>
-		<property name="externalXmlFile" value="http://omia.angis.org.au/dumps/omia.xml.gz"/>
+		<property name="externalCausalMutationFile" value="https://omia.org/download/causal_mutations/?format=gene_table"/>
+		<property name="externalXmlFile" value="https://omia.org/dumps/omia.xml.gz"/>
 		<property name="appendDateStamp" value="true"/>
 		<property name="useCompression" value="false"/>
 		<property name="maxNumberOfLocalFiles" value="5"/>
