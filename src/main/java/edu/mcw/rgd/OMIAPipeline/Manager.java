@@ -92,138 +92,137 @@ public class Manager {
 
         //Check whether the downloaded files and matching excel file have new content or not,
         // and if stopProcessingIfNoNewFiles at AppConfigure.xml is set to True or False
-        if (stopProcessingIfNoNewFiles && !omiaFileDownloader.isCausalMutationFileNew() && !omiaFileDownloader.isXmlFileNew() && !excelReader.isRgdOmiaMatchingFileNew()){
+        if( getStopProcessingIfNoNewFiles() && !omiaFileDownloader.isCausalMutationFileNew() && !omiaFileDownloader.isXmlFileNew() && !excelReader.isRgdOmiaMatchingFileNew()){
             loggerSummary.info("No new files, stopped processing!");
             System.exit(0);
         }
-        else {
-            loggerSummary.info("Started processing...");
 
-            Map <Phenotype, String> pheneRgdTermAccMap = excelReader.getGenePheneTermList();
-            //Map <Integer, String> pheneIdPheneNameMap = extractPheneIdPheneNamePairs(pheneRgdTermAccMap);
+        loggerSummary.info("Started processing...");
 
-            //read causal_mutations file
-            tabDelimetedTextParser.init(getSpeciesKeyForDog(), omiaFileDownloader.getLocalCausalMutationsFile());
-            Map <String, TabDelimetedTextParser.OmiaRecord> genePheneMap = tabDelimetedTextParser.getMutationsMap();
-            loggerSummary.info("Total number of Causal Mutations from OMIA : " + genePheneMap.size());
+        Map <Phenotype, String> pheneRgdTermAccMap = excelReader.getGenePheneTermList();
 
-            //read the old-new ncbi_gene_ids from the mapping file
-            //if this file doesn't exist then just skips it
-            Map <String, String> oldNewNcbiIdPairMap = tabDelimetedTextParser.getOldNewNcbiIdPairMap();
+        //read causal_mutations file
+        tabDelimetedTextParser.init(getSpeciesKeyForDog(), omiaFileDownloader.getLocalCausalMutationsFile());
+        Map <String, TabDelimetedTextParser.OmiaRecord> genePheneMap = tabDelimetedTextParser.getMutationsMap();
+        loggerSummary.info("Total number of Causal Mutations from OMIA : " + genePheneMap.size());
 
-            //read the OMIA xml file
-            xmlParser.init(omiaFileDownloader, getSpeciesKeyForDog());
-            Map<Integer, Object> omiaPheneMap = xmlParser.readTable(xmlParser.getPheneTableNameInXML(),
-                    xmlParser.getOmiaIdFieldNameInXML(), xmlParser.getPheneIdFieldNameInXML(), false);
+        //read the old-new ncbi_gene_ids from the mapping file
+        //if this file doesn't exist then just skips it
+        Map <String, String> oldNewNcbiIdPairMap = tabDelimetedTextParser.getOldNewNcbiIdPairMap();
 
-            Multimap<Integer, Object> articlePheneMap = xmlParser.readTableMultiKey(xmlParser.getArticlePheneTableNameInXml(),
-                    xmlParser.getPheneIdFieldNameInXML(), xmlParser.getArticleIdFieldNameInXML(), false);
+        //read the OMIA xml file
+        xmlParser.init(omiaFileDownloader, getSpeciesKeyForDog());
+        Map<Integer, Object> omiaPheneMap = xmlParser.readTable(xmlParser.getPheneTableNameInXML(),
+                xmlParser.getOmiaIdFieldNameInXML(), xmlParser.getPheneIdFieldNameInXML(), false);
 
-            Map<Integer, Object> articlesMap = xmlParser.readTable(xmlParser.getArticlesTableNameInXml(),
-                    xmlParser.getArticleIdFieldNameInXML(), xmlParser.getPubmedIdFieldNameInXML(), false);
+        Multimap<Integer, Object> articlePheneMap = xmlParser.readTableMultiKey(xmlParser.getArticlePheneTableNameInXml(),
+                xmlParser.getPheneIdFieldNameInXML(), xmlParser.getArticleIdFieldNameInXML(), false);
 
-            dao.init(runDate);
+        Map<Integer, Object> articlesMap = xmlParser.readTable(xmlParser.getArticlesTableNameInXml(),
+                xmlParser.getArticleIdFieldNameInXML(), xmlParser.getPubmedIdFieldNameInXML(), false);
 
-            List<Annotation> tobeInsertAnnnotationList = new ArrayList<Annotation>();
-            List<Annotation> tobeUpdatedAnnnotationList = new ArrayList<Annotation>();
+        dao.init(runDate);
 
-            Integer pheneId = null;
+        List<Annotation> incomingAnnnotations = new ArrayList<Annotation>();
 
-            String pubmedStr = "";
+        Integer pheneId;
+        String pubmedStr;
 
-            int numberOfGenesHaveExcessPubmed = 0,
-                    numberOfMissingGeneIdsInCausalMutationsFile = 0,
-                    numberOfMismatchedPheneNames = 0,
-                    numberOfNotFoundNCBIGenesInRGD = 0;
+        int numberOfGenesHaveExcessPubmed = 0,
+                numberOfMissingGeneIdsInCausalMutationsFile = 0,
+                numberOfMismatchedPheneNames = 0,
+                numberOfNotFoundNCBIGenesInRGD = 0;
 
-            Collection<Object> articleIdList;
+        Collection<Object> articleIdList;
 
-            //for each phene-gene record in the causal_mutations.txt file
-            for (String key: genePheneMap.keySet()) {
-                Integer omiaId = Integer.valueOf(key);
-                TabDelimetedTextParser.OmiaRecord omiaRecord = genePheneMap.get(key);
+        //for each phene-gene record in the causal_mutations.txt file
+        for (String key: genePheneMap.keySet()) {
+            Integer omiaId = Integer.valueOf(key);
+            TabDelimetedTextParser.OmiaRecord omiaRecord = genePheneMap.get(key);
 
 
-                //Some of NcbiGeneIds coming from OMIA is old
-                //We are reading a mapping file and if there is a new NcbiGeneId for the ncbigeneid then we set the new value
-                if (oldNewNcbiIdPairMap != null) {
-                    try {
-                        String newNcbiGeneId = oldNewNcbiIdPairMap.get(omiaRecord.getNcbiGeneIdOrSymbol());
-                        if (newNcbiGeneId != null) {
-                            omiaRecord.setNcbiGeneId(newNcbiGeneId);
-                        }
-                    } catch (NullPointerException e) {
-                        // we have only a few gene_id mappings
-                        // for others we will have nullpointerexception
-                        // do nothing for those genes
+            //Some of NcbiGeneIds coming from OMIA is old
+            //We are reading a mapping file and if there is a new NcbiGeneId for the ncbigeneid then we set the new value
+            if (oldNewNcbiIdPairMap != null) {
+                try {
+                    String newNcbiGeneId = oldNewNcbiIdPairMap.get(omiaRecord.getNcbiGeneIdOrSymbol());
+                    if (newNcbiGeneId != null) {
+                        omiaRecord.setNcbiGeneId(newNcbiGeneId);
                     }
-                } else if (omiaRecord.getNcbiGeneId() == null) {
-                    numberOfMissingGeneIdsInCausalMutationsFile++;
+                } catch (NullPointerException e) {
+                    // we have only a few gene_id mappings
+                    // for others we will have nullpointerexception
+                    // do nothing for those genes
                 }
-
-                pheneId = (Integer) omiaPheneMap.get(omiaId);
-                // sometimes XML file doesn't contain any record for omia_id in causal_mutations_file
-                // in this case pheneId becomes null, skip those records
-                if (pheneId == null) {
-                    loggerWarning.info("Omia record with id " + omiaId + " from causal_mutations_file can't be found in XML file.");
-                    continue;
-                }
-                articleIdList = articlePheneMap.get(pheneId);
-
-                Object[] result = createPubmedString(articleIdList, articlesMap);
-                pubmedStr = (String) result[0];
-                Integer numberOfPubmed = (Integer) result[1];
-
-                String termAcc = pheneRgdTermAccMap.get(new Phenotype(pheneId));
-
-                if (termAcc != null) {
-                    try {
-                        Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr);
-                        if (annotation.getKey() == null)
-                            tobeInsertAnnnotationList.add(annotation);
-                        else
-                            tobeUpdatedAnnnotationList.add(annotation);
-
-                        if (numberOfPubmed > getMaxNumberOfPubmedIds()) {
-                            numberOfGenesHaveExcessPubmed++;
-                            loggerExcessPubmeds.info("Gene : " + omiaRecord.getNcbiGeneId() + " - Phene : " + " has " + numberOfPubmed + " Pubmed Ids");
-                        }
-                    } catch (RgdIdNotFoundException re) {
-                        loggerNotFoundNcbiGenes.info(re);
-                        numberOfNotFoundNCBIGenesInRGD++;
-                    }
-                }
-                // if the phene hasn't been mapped yet or phene name is different from the mapping file
-                else if (termAcc == null/* || !omiaRecord.getPheneName().equals(pheneIdPheneNameMap.get(pheneId) )*/) {
-                    numberOfMismatchedPheneNames++;
-                    loggerMismatchedPheneNames.info(pheneId + "\t" + omiaRecord.getPheneName() + "\t" + omiaId);
-                }
-
+            } else if (omiaRecord.getNcbiGeneId() == null) {
+                numberOfMissingGeneIdsInCausalMutationsFile++;
             }
-            loggerSummary.info("Total number of not found OMIA Phene Terms at RGD DB : " + numberOfMismatchedPheneNames);
-            loggerSummary.info("Total number of not found OMIA NCBI Gene Ids at RGD DB : " + numberOfNotFoundNCBIGenesInRGD);
-            loggerSummary.info("Total number of Missing NCBI Gene Ids in Causal Mutations File: " + numberOfMissingGeneIdsInCausalMutationsFile);
 
-            dao.insertAnnotations(tobeInsertAnnnotationList);
-            loggerSummary.info("Inserted OMIA annotations : " + tobeInsertAnnnotationList.size());
+            pheneId = (Integer) omiaPheneMap.get(omiaId);
+            // sometimes XML file doesn't contain any record for omia_id in causal_mutations_file
+            // in this case pheneId becomes null, skip those records
+            if (pheneId == null) {
+                loggerWarning.info("Omia record with id " + omiaId + " from causal_mutations_file can't be found in XML file.");
+                continue;
+            }
+            articleIdList = articlePheneMap.get(pheneId);
 
-            dao.updateAnnotations(tobeUpdatedAnnnotationList);
-            loggerSummary.info("Updated OMIA annotations : " + tobeUpdatedAnnnotationList.size());
+            Object[] result = createPubmedString(articleIdList, articlesMap);
+            pubmedStr = (String) result[0];
+            Integer numberOfPubmed = (Integer) result[1];
 
+            String termAcc = pheneRgdTermAccMap.get(new Phenotype(pheneId));
 
-            loggerSummary.info("Deleted obsolete OMIA annotations : " + dao.deleteUnmodifiedAnnotations());
-            loggerSummary.info("Number of OMIA Phene terms having more than max \"" + getMaxNumberOfPubmedIds() + "\" Pubmed Ids : " + numberOfGenesHaveExcessPubmed);
+            if (termAcc != null) {
+                try {
+                    Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr);
+                    incomingAnnnotations.add(annotation);
 
-            excelReader.updateLastProcessedMatchingFileRecord();
+                    if (numberOfPubmed > getMaxNumberOfPubmedIds()) {
+                        numberOfGenesHaveExcessPubmed++;
+                        loggerExcessPubmeds.info("Gene : " + omiaRecord.getNcbiGeneId() + " - Phene : " + " has " + numberOfPubmed + " Pubmed Ids");
+                    }
+                } catch (RgdIdNotFoundException re) {
+                    loggerNotFoundNcbiGenes.info(re);
+                    numberOfNotFoundNCBIGenesInRGD++;
+                }
+            }
+            // if the phene hasn't been mapped yet or phene name is different from the mapping file
+            else if (termAcc == null/* || !omiaRecord.getPheneName().equals(pheneIdPheneNameMap.get(pheneId) )*/) {
+                numberOfMismatchedPheneNames++;
+                loggerMismatchedPheneNames.info(pheneId + "\t" + omiaRecord.getPheneName() + "\t" + omiaId);
+            }
+
         }
+        loggerSummary.info("Total number of not found OMIA Phene Terms at RGD DB : " + numberOfMismatchedPheneNames);
+        loggerSummary.info("Total number of not found OMIA NCBI Gene Ids at RGD DB : " + numberOfNotFoundNCBIGenesInRGD);
+        loggerSummary.info("Total number of Missing NCBI Gene Ids in Causal Mutations File: " + numberOfMissingGeneIdsInCausalMutationsFile);
+
+        processAnnotations(incomingAnnnotations);
+
+
+        loggerSummary.info("Deleted obsolete OMIA annotations : " + dao.deleteUnmodifiedAnnotations());
+        loggerSummary.info("Number of OMIA Phene terms having more than max \"" + getMaxNumberOfPubmedIds() + "\" Pubmed Ids : " + numberOfGenesHaveExcessPubmed);
+
+        excelReader.updateLastProcessedMatchingFileRecord();
     }
-    public Map<Integer, String> extractPheneIdPheneNamePairs(Map <Phenotype, String> pheneRgdTermAccMap){
-        Map <Integer, String> pheneIdPheneNameMap = new TreeMap<>();
-        for (Map.Entry<Phenotype, String> e : pheneRgdTermAccMap.entrySet()) {
-            Phenotype phene = e.getKey();
-            pheneIdPheneNameMap.put(phene.getId(), phene.getName());
+
+    void processAnnotations(List<Annotation> annotations) throws Exception {
+
+        int insertedAnnotations = 0;
+        int updatedAnnotations = 0;
+
+        for( Annotation a: annotations ) {
+            boolean annotInserted = dao.upsertAnnotation(a);
+            if( annotInserted ) {
+                insertedAnnotations++;
+            } else {
+                updatedAnnotations++;
+            }
         }
-        return pheneIdPheneNameMap;
+
+        loggerSummary.info("Inserted OMIA annotations : " + insertedAnnotations);
+        loggerSummary.info("Updated OMIA annotations : " + updatedAnnotations);
     }
 
     public Object[] createPubmedString(Collection<Object> articleIdList, Map<Integer, Object> articlesMap){

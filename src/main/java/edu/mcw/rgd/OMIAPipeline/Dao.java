@@ -42,21 +42,24 @@ public class Dao {
         this.runDate = runDate;
     }
 
-    public int insertAnnotations(List<Annotation> annotations) throws Exception {
-        for (Annotation a : annotations) {
-            annotationDao.insertAnnotation(a);
-            insertedLogger.info(a.dump("-"));
-        }
-        return annotations.size();
-    }
-
-    public void updateAnnotations(List<Annotation> annotations) throws Exception {
-        for (Annotation a : annotations) {
+    /**
+     * insert or update an annotation
+     * @param a Annotation object
+     * @return true if incoming annotation has been inserted; false if it has been updated
+     */
+    public boolean upsertAnnotation(Annotation a) throws Exception {
+        int key = annotationDao.getAnnotationKey(a);
+        if (key != 0) {
+            a.setKey(key);
+            a.setLastModifiedDate(runDate);
             annotationDao.updateAnnotation(a);
             updatedLogger.info(a.dump("-"));
+            return false;
         }
+        annotationDao.insertAnnotation(a);
+        insertedLogger.info(a.dump("-"));
+        return true;
     }
-
 
     public int deleteUnmodifiedAnnotations() throws Exception{
         List<Annotation> unmodifiedAnnotations = getUnmodifiedAnnotationsSince(getTimeCriteriaForObsoloteAnnotationDeletion());
@@ -100,12 +103,6 @@ public class Dao {
         annotation.setCreatedBy(getOmiaUserKey());
         annotation.setLastModifiedBy(getOmiaUserKey());
         annotation.setXrefSource(pubmedStr);
-
-        int key = annotationDao.getAnnotationKey(annotation);
-        if( key != 0) {
-            annotation.setKey(key);
-            annotation.setLastModifiedDate(runDate);
-        }
 
         return annotation;
     }
