@@ -112,14 +112,14 @@ public class Manager {
 
         //read the OMIA xml file
         xmlParser.init(omiaFileDownloader, getSpeciesKeyForDog());
-        Map<Integer, Object> omiaPheneMap = xmlParser.readTable(xmlParser.getPheneTableNameInXML(),
-                xmlParser.getOmiaIdFieldNameInXML(), xmlParser.getPheneIdFieldNameInXML(), false);
+        Map<Integer, Object> omiaPheneMap = xmlParser.readTable(xmlParser.getPheneTableName(),
+                xmlParser.getOmiaIdFieldName(), xmlParser.getPheneIdFieldName(), false);
 
-        Multimap<Integer, Object> articlePheneMap = xmlParser.readTableMultiKey(xmlParser.getArticlePheneTableNameInXml(),
-                xmlParser.getPheneIdFieldNameInXML(), xmlParser.getArticleIdFieldNameInXML(), false);
+        Multimap<Integer, Object> articlePheneMap = xmlParser.readTableMultiKey(xmlParser.getArticlePheneTableName(),
+                xmlParser.getSpeciesSpecificPheneIdFieldName(), xmlParser.getArticleIdFieldName(), false);
 
-        Map<Integer, Object> articlesMap = xmlParser.readTable(xmlParser.getArticlesTableNameInXml(),
-                xmlParser.getArticleIdFieldNameInXML(), xmlParser.getPubmedIdFieldNameInXML(), false);
+        Map<Integer, Object> articlesMap = xmlParser.readTable(xmlParser.getArticlesTableName(),
+                xmlParser.getArticleIdFieldName(), xmlParser.getPubmedIdFieldName(), false);
 
         dao.init(runDate);
 
@@ -132,8 +132,6 @@ public class Manager {
                 numberOfMissingGeneIdsInCausalMutationsFile = 0,
                 numberOfMismatchedPheneNames = 0,
                 numberOfNotFoundNCBIGenesInRGD = 0;
-
-        Collection<Object> articleIdList;
 
         //for each phene-gene record in the causal_mutations.txt file
         for (String key: genePheneMap.keySet()) {
@@ -165,7 +163,7 @@ public class Manager {
                 loggerWarning.info("Omia record with id " + omiaId + " from causal_mutations_file can't be found in XML file.");
                 continue;
             }
-            articleIdList = articlePheneMap.get(pheneId);
+            Collection<Object> articleIdList = articlePheneMap.get(pheneId);
 
             Object[] result = createPubmedString(articleIdList, articlesMap);
             pubmedStr = (String) result[0];
@@ -226,10 +224,11 @@ public class Manager {
     }
 
     public Object[] createPubmedString(Collection<Object> articleIdList, Map<Integer, Object> articlesMap){
+
         String pubmedStr = "";
         int numberOfPubmed = 0;
-        for (Object anArticleIdList : articleIdList) {
-            Integer pubmedId = (Integer) articlesMap.get(anArticleIdList);
+        for (Object articleId: articleIdList) {
+            Integer pubmedId = (Integer) articlesMap.get(articleId);
             if (pubmedId != null) {
                 if (numberOfPubmed < getMaxNumberOfPubmedIds()) {
                     if (!pubmedStr.equals(""))

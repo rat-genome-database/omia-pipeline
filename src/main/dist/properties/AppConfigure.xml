@@ -14,7 +14,7 @@
 
 	<bean id="omiaFileDownloader" class="edu.mcw.rgd.OMIAPipeline.OmiaFileDownloader">
 		<property name="externalCausalMutationFile" value="https://omia.org/download/causal_mutations/?format=gene_table"/>
-		<property name="externalXmlFile" value="https://omia.org/dumps/omia.xml.gz"/>
+		<property name="externalXmlFile" value="https://omia.org/omia.xml.gz"/>
 		<property name="appendDateStamp" value="true"/>
 		<property name="useCompression" value="false"/>
 		<property name="maxNumberOfLocalFiles" value="5"/>
@@ -30,24 +30,24 @@
 	</bean>
 	
 	<bean id="xmlParser" class="edu.mcw.rgd.OMIAPipeline.XmlParser">
-		<property name="tableElementNameInXML" value="table_data"/>
-		<property name="nameAttributeNameInXML" value="name"/>
-		<property name="rowElementNameInXML" value="row"/>
-		<property name="fieldElementNameInXML" value="field"/>
-		<property name="pheneTableNameInXML" value="Phene"/>
-		<property name="omiaIdFieldNameInXML" value="omia_id"/>
-		<property name="speciesIdFieldNameInXML" value="gb_species_id"/>
-		<property name="omiaGroupTableNameInXML" value="OMIA_Group"/>
-		<property name="omiaGroupFieldNameInXML" value="group_name"/>
-		<property name="pheneGeneTableNameInXml" value="Phene_Gene"/>
-		<property name="pheneIdFieldNameInXML" value="phene_id"/>
-		<property name="geneIdFieldNameInXML" value="gene_id"/>
-		<property name="genesTableNameInXml" value="Genes_gb"/>
-		<property name="geneSymbolFieldNameInXML" value="symbol"/>
-		<property name="articlePheneTableNameInXml" value="Article_Phene"/>
-		<property name="articlesTableNameInXml" value="Articles"/>
-		<property name="articleIdFieldNameInXML" value="article_id"/>
-		<property name="pubmedIdFieldNameInXML" value="pubmed_id"/>
+		<property name="tableElementName" value="table_data"/>
+		<property name="nameAttributeName" value="name"/>
+		<property name="rowElementName" value="row"/>
+		<property name="fieldElementName" value="field"/>
+
+		<property name="pheneTableName" value="Phene"/>
+		<property name="omiaIdFieldName" value="omia_id"/>
+		<property name="speciesIdFieldName" value="gb_species_id"/>
+
+		<property name="pheneGeneTableName" value="Phene_Gene"/>
+		<property name="pheneIdFieldName" value="phene_id"/>
+
+		<property name="articlePheneTableName" value="Phene_Article"/>
+		<property name="speciesSpecificPheneIdFieldName" value="species_specific_phene_id"/>
+
+		<property name="articlesTableName" value="Article"/>
+		<property name="articleIdFieldName" value="article_id"/>
+		<property name="pubmedIdFieldName" value="pubmed_id"/>
 	</bean>
 	
 	<bean id="tabDelimetedTextParser" class="edu.mcw.rgd.OMIAPipeline.TabDelimetedTextParser">

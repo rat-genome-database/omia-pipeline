@@ -24,25 +24,20 @@ public class XmlParser {
     private Document xmlDoc;
     private OmiaFileDownloader fileDownloader;
     private Integer speciesKeyForDog;
-    private String tableElementNameInXML;
-    private String nameAttributeNameInXML;
-    private String rowElementNameInXML;
-    private String fieldElementNameInXML;
-    private String omiaIdFieldNameInXML;
-    private String speciesIdFieldNameInXML;
-    private String pheneTableNameInXML;
-    private String pheneIdFieldNameInXML;
-    private String omiaGroupTableNameInXML;
-    private String omiaGroupFieldNameInXML;
-    private String pheneGeneTableNameInXml;
-    private String geneIdNameInXml;
-    private String genesTableNameInXml;
-    private String geneSymbolNameInXML;
-    private String articlePheneTableNameInXml;
-    private String articlesTableNameInXml;
-    private String articleIdNameInXml;
-    private String pubmedIdNameInXml;
-
+    private String tableElementName;
+    private String nameAttributeName;
+    private String rowElementName;
+    private String fieldElementName;
+    private String omiaIdFieldName;
+    private String speciesIdFieldName;
+    private String pheneTableName;
+    private String pheneIdFieldName;
+    private String pheneGeneTableName;
+    private String articlePheneTableName;
+    private String speciesSpecificPheneIdFieldName;
+    private String articlesTableName;
+    private String articleIdFieldName;
+    private String pubmedIdFieldName;
 
     public void init(OmiaFileDownloader fileDownloader, Integer speciesKeyForDog) throws Exception{
         this.fileDownloader = fileDownloader;
@@ -78,24 +73,23 @@ public class XmlParser {
 
     public Multimap<Integer, Object> readTableMultiKey(String tableName, String keyField, String valueField, boolean isValueString) {
         Multimap<Integer, Object> pairMap = ArrayListMultimap.create();
-        NodeList tableDataList = xmlDoc.getElementsByTagName(getTableElementNameInXML());
+        NodeList tableDataList = xmlDoc.getElementsByTagName(getTableElementName());
 
         for (int i = 0; i < tableDataList.getLength(); i++) {
             Element tableNode = (Element) tableDataList.item(i);
-            if (tableNode.getAttribute(getNameAttributeNameInXML()).equals(tableName)) {
-                NodeList rows = tableNode.getElementsByTagName(getRowElementNameInXML());
+            if (tableNode.getAttribute(getNameAttributeName()).equals(tableName)) {
+                NodeList rows = tableNode.getElementsByTagName(getRowElementName());
                 for (int j = 0; j < rows.getLength(); j++) {
                     Element row = (Element) rows.item(j);
-                    NodeList fields = row.getElementsByTagName(getFieldElementNameInXML());
+                    NodeList fields = row.getElementsByTagName(getFieldElementName());
                     Integer key = null;
                     Object value = null;
-                    Integer speciesIdName = null;
                     for (int k = 0; k < fields.getLength(); k++) {
                         Element field = (Element) fields.item(k);
-                        if (field.getAttribute(getNameAttributeNameInXML()).equals(keyField)) {
+                        if (field.getAttribute(getNameAttributeName()).equals(keyField)) {
                             if (field.getFirstChild() != null)
                                 key = Integer.valueOf(field.getTextContent());
-                        } else if (field.getAttribute(getNameAttributeNameInXML()).equals(valueField)) {
+                        } else if (field.getAttribute(getNameAttributeName()).equals(valueField)) {
                             if (field.getFirstChild() != null) {
                                 if (isValueString)
                                     value = field.getTextContent();
@@ -113,30 +107,30 @@ public class XmlParser {
 
         return pairMap;
     }
+
     public Map<Integer, Object> readTable(String tableName, String keyField, String valueField, boolean isValueString) {
         Map<Integer, Object> pairMap = new TreeMap<>();
-        NodeList tableDataList = xmlDoc.getElementsByTagName(getTableElementNameInXML());
+        NodeList tableDataList = xmlDoc.getElementsByTagName(getTableElementName());
 
         for (int i = 0; i < tableDataList.getLength(); i++) {
             Element tableNode = (Element) tableDataList.item(i);
-            if (tableNode.getAttribute(getNameAttributeNameInXML()).equals(tableName)) {
-                NodeList rows = tableNode.getElementsByTagName(getRowElementNameInXML());
+            if (tableNode.getAttribute(getNameAttributeName()).equals(tableName)) {
+                NodeList rows = tableNode.getElementsByTagName(getRowElementName());
                 for (int j = 0; j < rows.getLength(); j++) {
                     Element row = (Element) rows.item(j);
-                    NodeList fields = row.getElementsByTagName(getFieldElementNameInXML());
+                    NodeList fields = row.getElementsByTagName(getFieldElementName());
                     Integer key = null;
                     Object value = null;
-                    String characterised = null;
                     Integer speciesId = null;
                     for (int k = 0; k < fields.getLength(); k++) {
                         Element field = (Element) fields.item(k);
-                        if (tableName.equals(getPheneTableNameInXML()) && keyField.equals(getOmiaIdFieldNameInXML()) && field.getAttribute(getNameAttributeNameInXML()).equals(getSpeciesIdFieldNameInXML()))
+                        if (tableName.equals(getPheneTableName()) && keyField.equals(getOmiaIdFieldName()) && field.getAttribute(getNameAttributeName()).equals(getSpeciesIdFieldName()))
                             speciesId = Integer.valueOf(field.getTextContent());
 
-                        if (field.getAttribute(getNameAttributeNameInXML()).equals(keyField)) {
+                        if (field.getAttribute(getNameAttributeName()).equals(keyField)) {
                             if (field.getFirstChild() != null)
                                 key = Integer.valueOf(field.getTextContent());
-                        } else if (field.getAttribute(getNameAttributeNameInXML()).equals(valueField)) {
+                        } else if (field.getAttribute(getNameAttributeName()).equals(valueField)) {
                             if (field.getFirstChild() != null) {
                                 if (isValueString)
                                     value = field.getTextContent();
@@ -146,7 +140,7 @@ public class XmlParser {
                         }
                     }
 
-                    if (tableName.equals(getPheneGeneTableNameInXml())){
+                    if (tableName.equals(getPheneGeneTableName())){
                         if (value != null){
                             if (pairMap.get(key) == null){
                                 pairMap.put(key, value);
@@ -207,61 +201,119 @@ public class XmlParser {
         }
         return out.toString();
     }
-    public void setTableElementNameInXML(String tableElementNameInXML) {
-        this.tableElementNameInXML = tableElementNameInXML;
+
+    public String getTableElementName() {
+        return tableElementName;
     }
 
-    public String getTableElementNameInXML() {
-        return tableElementNameInXML;
+    public void setTableElementName(String tableElementName) {
+        this.tableElementName = tableElementName;
     }
 
-    public void setNameAttributeNameInXML(String nameAttributeNameInXML) {
-        this.nameAttributeNameInXML = nameAttributeNameInXML;
+    public String getNameAttributeName() {
+        return nameAttributeName;
     }
 
-    public String getNameAttributeNameInXML() {
-        return nameAttributeNameInXML;
+    public void setNameAttributeName(String nameAttributeName) {
+        this.nameAttributeName = nameAttributeName;
     }
 
-    public void setRowElementNameInXML(String rowElementNameInXML) {
-        this.rowElementNameInXML = rowElementNameInXML;
+    public String getRowElementName() {
+        return rowElementName;
     }
 
-    public String getRowElementNameInXML() {
-        return rowElementNameInXML;
+    public void setRowElementName(String rowElementName) {
+        this.rowElementName = rowElementName;
     }
 
-    public void setFieldElementNameInXML(String fieldElementNameInXML) {
-        this.fieldElementNameInXML = fieldElementNameInXML;
+    public String getFieldElementName() {
+        return fieldElementName;
     }
 
-    public String getFieldElementNameInXML() {
-        return fieldElementNameInXML;
+    public void setFieldElementName(String fieldElementName) {
+        this.fieldElementName = fieldElementName;
     }
 
-    public void setOmiaIdFieldNameInXML(String omiaIdFieldNameInXML) {
-        this.omiaIdFieldNameInXML = omiaIdFieldNameInXML;
+    public String getOmiaIdFieldName() {
+        return omiaIdFieldName;
     }
 
-    public String getOmiaIdFieldNameInXML() {
-        return omiaIdFieldNameInXML;
+    public void setOmiaIdFieldName(String omiaIdFieldName) {
+        this.omiaIdFieldName = omiaIdFieldName;
     }
 
-    public void setSpeciesIdFieldNameInXML(String speciesIdFieldNameInXML) {
-        this.speciesIdFieldNameInXML = speciesIdFieldNameInXML;
+    public String getSpeciesIdFieldName() {
+        return speciesIdFieldName;
     }
 
-    public String getSpeciesIdFieldNameInXML() {
-        return speciesIdFieldNameInXML;
+    public void setSpeciesIdFieldName(String speciesIdFieldName) {
+        this.speciesIdFieldName = speciesIdFieldName;
     }
 
-    public void setPheneTableNameInXML(String pheneTableNameInXML) {
-        this.pheneTableNameInXML = pheneTableNameInXML;
+    public String getPheneTableName() {
+        return pheneTableName;
     }
 
-    public String getPheneTableNameInXML() {
-        return pheneTableNameInXML;
+    public void setPheneTableName(String pheneTableName) {
+        this.pheneTableName = pheneTableName;
     }
+
+    public String getPheneIdFieldName() {
+        return pheneIdFieldName;
+    }
+
+    public void setPheneIdFieldName(String pheneIdFieldName) {
+        this.pheneIdFieldName = pheneIdFieldName;
+    }
+
+    public String getPheneGeneTableName() {
+        return pheneGeneTableName;
+    }
+
+    public void setPheneGeneTableName(String pheneGeneTableName) {
+        this.pheneGeneTableName = pheneGeneTableName;
+    }
+
+    public String getArticlePheneTableName() {
+        return articlePheneTableName;
+    }
+
+    public void setArticlePheneTableName(String articlePheneTableName) {
+        this.articlePheneTableName = articlePheneTableName;
+    }
+
+    public String getSpeciesSpecificPheneIdFieldName() {
+        return speciesSpecificPheneIdFieldName;
+    }
+
+    public void setSpeciesSpecificPheneIdFieldName(String speciesSpecificPheneIdFieldName) {
+        this.speciesSpecificPheneIdFieldName = speciesSpecificPheneIdFieldName;
+    }
+
+    public String getArticlesTableName() {
+        return articlesTableName;
+    }
+
+    public void setArticlesTableName(String articlesTableName) {
+        this.articlesTableName = articlesTableName;
+    }
+
+    public String getArticleIdFieldName() {
+        return articleIdFieldName;
+    }
+
+    public void setArticleIdFieldName(String articleIdFieldName) {
+        this.articleIdFieldName = articleIdFieldName;
+    }
+
+    public String getPubmedIdFieldName() {
+        return pubmedIdFieldName;
+    }
+
+    public void setPubmedIdFieldName(String pubmedIdFieldName) {
+        this.pubmedIdFieldName = pubmedIdFieldName;
+    }
+
     public Integer getSpeciesKeyForDog() {
         return speciesKeyForDog;
     }
@@ -269,92 +321,4 @@ public class XmlParser {
     public void setSpeciesKeyForDog(Integer speciesKeyForDog) {
         this.speciesKeyForDog = speciesKeyForDog;
     }
-    public void setPheneIdFieldNameInXML(String pheneIdFieldNameInXML) {
-        this.pheneIdFieldNameInXML = pheneIdFieldNameInXML;
-    }
-
-    public String getPheneIdFieldNameInXML() {
-        return pheneIdFieldNameInXML;
-    }
-
-    public void setOmiaGroupTableNameInXML(String omiaGroupTableNameInXML) {
-        this.omiaGroupTableNameInXML = omiaGroupTableNameInXML;
-    }
-
-    public String getOmiaGroupTableNameInXML() {
-        return omiaGroupTableNameInXML;
-    }
-
-    public void setOmiaGroupFieldNameInXML(String omiaGroupFieldNameInXML) {
-        this.omiaGroupFieldNameInXML = omiaGroupFieldNameInXML;
-    }
-
-    public String getOmiaGroupFieldNameInXML() {
-        return omiaGroupFieldNameInXML;
-    }
-
-    public void setPheneGeneTableNameInXml(String pheneGeneTableNameInXml) {
-        this.pheneGeneTableNameInXml = pheneGeneTableNameInXml;
-    }
-
-    public String getPheneGeneTableNameInXml() {
-        return pheneGeneTableNameInXml;
-    }
-
-    public void setGeneIdFieldNameInXML(String geneIdFieldNameInXML) {
-        this.geneIdNameInXml = geneIdFieldNameInXML;
-    }
-
-    public String getGeneIdFieldNameInXML() {
-        return geneIdNameInXml;
-    }
-
-    public void setGenesTableNameInXml(String genesTableNameInXml) {
-        this.genesTableNameInXml = genesTableNameInXml;
-    }
-
-    public String getGenesTableNameInXml() {
-        return genesTableNameInXml;
-    }
-
-    public void setGeneSymbolFieldNameInXML(String geneSymbolFieldNameInXML) {
-        this.geneSymbolNameInXML = geneSymbolFieldNameInXML;
-    }
-
-    public String getGeneSymbolFieldNameInXML() {
-        return geneSymbolNameInXML;
-    }
-
-    public void setArticlePheneTableNameInXml(String articlePheneTableNameInXml) {
-        this.articlePheneTableNameInXml = articlePheneTableNameInXml;
-    }
-
-    public String getArticlePheneTableNameInXml() {
-        return articlePheneTableNameInXml;
-    }
-
-    public void setArticlesTableNameInXml(String articlesTableNameInXml) {
-        this.articlesTableNameInXml = articlesTableNameInXml;
-    }
-
-    public String getArticlesTableNameInXml() {
-        return articlesTableNameInXml;
-    }
-
-    public void setArticleIdFieldNameInXML(String articleIdFieldNameInXML) {
-        this.articleIdNameInXml = articleIdFieldNameInXML;
-    }
-
-    public String getArticleIdFieldNameInXML() {
-        return articleIdNameInXml;
-    }
-
-    public void setPubmedIdFieldNameInXML(String pubmedIdFieldNameInXML) {
-        this.pubmedIdNameInXml = pubmedIdFieldNameInXML;
-    }
-
-    public String getPubmedIdFieldNameInXML() {
-        return pubmedIdNameInXml;
-    }
-
 }
