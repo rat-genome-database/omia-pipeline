@@ -14,7 +14,7 @@
 
 	<bean id="omiaFileDownloader" class="edu.mcw.rgd.OMIAPipeline.OmiaFileDownloader">
 		<property name="externalCausalMutationFile" value="https://omia.org/download/causal_mutations/?format=gene_table"/>
-		<property name="externalXmlFile" value="https://omia.org/omia.xml.gz"/>
+		<property name="externalXmlFile" value="https://omia.org/dumps/omia.xml.gz"/>
 		<property name="appendDateStamp" value="true"/>
 		<property name="useCompression" value="false"/>
 		<property name="maxNumberOfLocalFiles" value="5"/>
