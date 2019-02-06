@@ -38,9 +38,8 @@ public class Manager {
     }
 
     private int maxNumberOfPubmedIds;
-    private Integer speciesKeyForDog;
     private boolean stopProcessingIfNoNewFiles;
-
+    private List<String> speciesProcessed;
 
     public static void main(String[] args) throws Exception {
         DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
@@ -102,7 +101,7 @@ public class Manager {
         Map <Phenotype, String> pheneRgdTermAccMap = excelReader.getGenePheneTermList();
 
         //read causal_mutations file
-        tabDelimetedTextParser.init(getSpeciesKeyForDog(), omiaFileDownloader.getLocalCausalMutationsFile());
+        tabDelimetedTextParser.init(getSpeciesProcessed(), omiaFileDownloader.getLocalCausalMutationsFile());
         Map <String, TabDelimetedTextParser.OmiaRecord> genePheneMap = tabDelimetedTextParser.getMutationsMap();
         loggerSummary.info("Total number of Causal Mutations from OMIA : " + genePheneMap.size());
 
@@ -111,7 +110,7 @@ public class Manager {
         Map <String, String> oldNewNcbiIdPairMap = tabDelimetedTextParser.getOldNewNcbiIdPairMap();
 
         //read the OMIA xml file
-        xmlParser.init(omiaFileDownloader, getSpeciesKeyForDog());
+        xmlParser.init(omiaFileDownloader, getSpeciesProcessed());
         Map<Integer, Object> omiaPheneMap = xmlParser.readTable(xmlParser.getPheneTableName(),
                 xmlParser.getOmiaIdFieldName(), xmlParser.getPheneIdFieldName(), false);
 
@@ -286,12 +285,12 @@ public class Manager {
         this.dao = dao;
     }
 
-    public void setSpeciesKeyForDog(Integer speciesKeyForDog) {
-        this.speciesKeyForDog = speciesKeyForDog;
+    public void setSpeciesProcessed(List<String> list) {
+        speciesProcessed = list;
     }
 
-    public Integer getSpeciesKeyForDog() {
-        return speciesKeyForDog;
+    public List<String> getSpeciesProcessed() {
+        return speciesProcessed;
     }
 
     public void setTabDelimetedTextParser(TabDelimetedTextParser tabDelimetedTextParser) {

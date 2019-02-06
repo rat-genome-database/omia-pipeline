@@ -3,17 +3,17 @@ package edu.mcw.rgd.OMIAPipeline;
 /**
  * Created by cdursun on 3/15/2017.
  */
+import edu.mcw.rgd.datamodel.SpeciesType;
+import edu.mcw.rgd.process.Utils;
+
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class TabDelimetedTextParser {
     private String causalMutationsFileName;
     private String oldNewNcbiGeneIdMappingFileName;
     private String textForNullNcbiGeneId;
-    private Integer speciesKeyForDog;
     private byte columnNoForGeneSymbol;
     private byte columnNoForNcbiGeneId;
     private byte columnNoForOmiaId;
@@ -21,66 +21,59 @@ public class TabDelimetedTextParser {
     private byte columnNoForPheneName;
     private byte columnNoForOldNcbiGeneId;
     private byte columnNoForNewNcbiGeneId;
+    private Set<Integer> taxonIds = new HashSet<>();
 
-
-    public void init(Integer speciesKeyForDog, String causalMutationsFileName){
-        this.speciesKeyForDog = speciesKeyForDog;
+    public void init(List<String> speciesProcessed, String causalMutationsFileName){
         this.causalMutationsFileName = causalMutationsFileName;
+
+        for( String speciesName: speciesProcessed ) {
+            taxonIds.add(SpeciesType.getTaxonomicId(SpeciesType.parse(speciesName)));
+        }
     }
 
     public Map<String, OmiaRecord> getMutationsMap() throws Exception{
         BufferedReader buf = new BufferedReader(new FileReader(causalMutationsFileName));
         Map<String, OmiaRecord> genePheneMap = new TreeMap<String, OmiaRecord>();
 
-        String lineJustFetched = null;
         String[] wordsArray;
-        String taxonomyID = "", omiaID = "", ncbiGeneID = "", geneSymbol = "", pheneName = "";
-        int i;
+        String omiaID = "", ncbiGeneID = "", geneSymbol = "", pheneName = "";
+        int taxonId = 0, i;
 
-        buf.readLine(); //skip the header row
-        while(true){
-            lineJustFetched = buf.readLine();
-            if(lineJustFetched == null){
-                break;
-            }else{
-                wordsArray = lineJustFetched.split("\t");
-                i = 0;
-                for(String each : wordsArray){
-                    if(!"".equals(each)){
-                        if ( i == getColumnNoForGeneSymbol()){
-                            geneSymbol = each;
-                        }else if ( i == getColumnNoForNcbiGeneId()){
-                            ncbiGeneID = each;
-                        }else if ( i == getColumnNoForOmiaId()){
-                            omiaID = each;
-                        }else if ( i == getColumnNoForTaxonomyId()){
-                            taxonomyID = each;
-                        }else if ( i == getColumnNoForPheneName()){
-                            pheneName = each;
-                        }
+        String line = buf.readLine(); //skip the header row
+
+        while( (line=buf.readLine())!=null ) {
+            wordsArray = line.split("\t");
+            i = 0;
+            for(String each : wordsArray){
+                if(!"".equals(each)){
+                    if ( i == getColumnNoForGeneSymbol()){
+                        geneSymbol = each;
+                    }else if ( i == getColumnNoForNcbiGeneId()){
+                        ncbiGeneID = each;
+                    }else if ( i == getColumnNoForOmiaId()){
+                        omiaID = each;
+                    }else if ( i == getColumnNoForTaxonomyId()){
+                        taxonId = Integer.parseInt(each);
+                    }else if ( i == getColumnNoForPheneName()){
+                        pheneName = each;
                     }
+                }
 
-                    i++;
-                }
-                if (Integer.parseInt(taxonomyID) == getSpeciesKeyForDog()){
-                    if (ncbiGeneID.equals(getTextForNullNcbiGeneId()))
-                        ncbiGeneID = null;
-                    genePheneMap.put(omiaID, new OmiaRecord(geneSymbol, ncbiGeneID, omiaID, pheneName));
-                }
+                i++;
+            }
+
+            if( taxonIds.contains(taxonId) ){
+                if (ncbiGeneID.equals(getTextForNullNcbiGeneId()))
+                    ncbiGeneID = null;
+                genePheneMap.put(omiaID, new OmiaRecord(geneSymbol, ncbiGeneID, omiaID, pheneName, taxonId));
             }
         }
         buf.close();
         return genePheneMap;
     }
+
     public Map<String, String> getOldNewNcbiIdPairMap() throws Exception{
-        BufferedReader buf;
-        try {
-            buf = new BufferedReader(new FileReader(OmiaFileDownloader.DATA_DIRECTORY + oldNewNcbiGeneIdMappingFileName));
-        }
-        catch (FileNotFoundException e){
-            //if there is no oldNewNcbiIdMappingFile then do nothing
-            return null;
-        }
+        BufferedReader buf = Utils.openReader(OmiaFileDownloader.DATA_DIRECTORY + oldNewNcbiGeneIdMappingFileName);
 
         Map<String, String> oldNewNcbiIdPairMap = new TreeMap<String, String>();
         String lineJustFetched = null;
@@ -121,11 +114,6 @@ public class TabDelimetedTextParser {
     public String getTextForNullNcbiGeneId() {
         return textForNullNcbiGeneId;
     }
-
-    public Integer getSpeciesKeyForDog() {
-        return speciesKeyForDog;
-    }
-
 
     public void setColumnNoForGeneSymbol(byte columnNoForGeneSymbol) {
         this.columnNoForGeneSymbol = columnNoForGeneSymbol;
@@ -194,12 +182,12 @@ public class TabDelimetedTextParser {
 
 
     public class OmiaRecord {
-        public OmiaRecord(String geneSymbol, String ncbiGeneId, String omiaId, String pheneName) {
+        public OmiaRecord(String geneSymbol, String ncbiGeneId, String omiaId, String pheneName, int taxonId) {
             this.geneSymbol = geneSymbol;
             this.ncbiGeneId = ncbiGeneId;
             this.omiaId = Integer.valueOf(omiaId);
             this.pheneName = pheneName;
-            this.speciesKeyForDog = getSpeciesKeyForDog();
+            this.taxonId = taxonId;
         }
 
         public String getGeneSymbol() {
@@ -238,14 +226,13 @@ public class TabDelimetedTextParser {
         }
 
         public String toString (){
-            return geneSymbol + "\t" + ncbiGeneId +  "\t" + omiaId + "\t"+ speciesKeyForDog + "\t" + pheneName;
+            return geneSymbol + "\t" + ncbiGeneId +  "\t" + omiaId + "\t"+ taxonId + "\t" + pheneName;
         }
 
         private String geneSymbol;
         private String ncbiGeneId;
         private Integer omiaId;
         private String pheneName;
-
-        private Integer speciesKeyForDog;
+        private int taxonId;
     }
 }
