@@ -139,7 +139,6 @@ public class Manager {
             Integer omiaId = Integer.valueOf(key);
             TabDelimetedTextParser.OmiaRecord omiaRecord = genePheneMap.get(key);
 
-
             //Some of NcbiGeneIds coming from OMIA is old
             //We are reading a mapping file and if there is a new NcbiGeneId for the ncbigeneid then we set the new value
             if (oldNewNcbiIdPairMap != null) {
@@ -170,6 +169,9 @@ public class Manager {
             pubmedStr = (String) result[0];
             Integer numberOfPubmed = (Integer) result[1];
 
+            if( pheneId==319){
+                System.out.println("dupa");
+            }
             String termAcc = pheneRgdTermAccMap.get(new Phenotype(pheneId));
 
             if (termAcc != null) {
@@ -186,8 +188,8 @@ public class Manager {
                     numberOfNotFoundNCBIGenesInRGD++;
                 }
             }
-            // if the phene hasn't been mapped yet or phene name is different from the mapping file
-            else if (termAcc == null/* || !omiaRecord.getPheneName().equals(pheneIdPheneNameMap.get(pheneId) )*/) {
+            // if the phene hasn't been mapped yet
+            else {
                 numberOfMismatchedPheneNames++;
                 loggerMismatchedPheneNames.info(pheneId + "\t" + omiaRecord.getPheneName() + "\t" + omiaId);
             }

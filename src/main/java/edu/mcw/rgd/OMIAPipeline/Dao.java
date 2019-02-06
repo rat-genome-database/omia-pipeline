@@ -86,6 +86,7 @@ public class Dao {
     }
 
     public Annotation createNewAnnotation(String termAcc, TabDelimetedTextParser.OmiaRecord omiaRecord, String pubmedStr, Collection<Integer> speciesTypeKeys) throws Exception{
+
         Annotation annotation = new Annotation();
         Gene gene = getGeneByNcbiGeneIdOrGeneSymbol(omiaRecord.getNcbiGeneId(), omiaRecord.getGeneSymbol(), speciesTypeKeys);
         annotation.setTerm(ontologyXdao.getTermByAccId(termAcc).getTerm());

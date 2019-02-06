@@ -229,6 +229,6 @@ public class TabDelimetedTextParser {
         private String ncbiGeneId;
         private Integer omiaId;
         private String pheneName;
-        private int taxonId;
+        int taxonId;
     }
 }
