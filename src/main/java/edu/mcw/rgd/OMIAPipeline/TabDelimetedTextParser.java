@@ -3,7 +3,6 @@ package edu.mcw.rgd.OMIAPipeline;
 /**
  * Created by cdursun on 3/15/2017.
  */
-import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.process.Utils;
 
 import java.io.BufferedReader;
@@ -21,14 +20,11 @@ public class TabDelimetedTextParser {
     private byte columnNoForPheneName;
     private byte columnNoForOldNcbiGeneId;
     private byte columnNoForNewNcbiGeneId;
-    private Set<Integer> taxonIds = new HashSet<>();
+    private Set<Integer> taxonIds;
 
-    public void init(List<String> speciesProcessed, String causalMutationsFileName){
+    public void init(Set<Integer> taxonIds, String causalMutationsFileName){
         this.causalMutationsFileName = causalMutationsFileName;
-
-        for( String speciesName: speciesProcessed ) {
-            taxonIds.add(SpeciesType.getTaxonomicId(SpeciesType.parse(speciesName)));
-        }
+        this.taxonIds = taxonIds;
     }
 
     public Map<String, OmiaRecord> getMutationsMap() throws Exception{

@@ -35,15 +35,11 @@ public class XmlParser {
     private String articlesTableName;
     private String articleIdFieldName;
     private String pubmedIdFieldName;
-    private Set<Integer> taxonIds = new HashSet<>();
+    private Set<Integer> taxonIds;
 
-    public void init(OmiaFileDownloader fileDownloader, List<String> speciesProcessed) throws Exception{
+    public void init(OmiaFileDownloader fileDownloader, Set<Integer> taxonIds) throws Exception{
         this.fileDownloader = fileDownloader;
-
-
-        for( String speciesName: speciesProcessed ) {
-            taxonIds.add(SpeciesType.getTaxonomicId(SpeciesType.parse(speciesName)));
-        }
+        this.taxonIds = taxonIds;
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();

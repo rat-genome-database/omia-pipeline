@@ -1,6 +1,7 @@
 package edu.mcw.rgd.OMIAPipeline;
 
 import com.google.common.collect.Multimap;
+import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.datamodel.ontology.Annotation;
 import edu.mcw.rgd.process.Utils;
 import org.apache.commons.logging.Log;
@@ -53,7 +54,7 @@ public class Manager {
         try {
             manager.run(time0);
         } catch (Exception e) {
-            e.printStackTrace();
+            Utils.printStackTrace(e, loggerSummary);
             throw e;
         }
 
@@ -98,10 +99,20 @@ public class Manager {
 
         loggerSummary.info("Started processing...");
 
+        Set<Integer> speciesTypeKeys = new HashSet<>();
+        Set<Integer> taxonIds = new HashSet<>();
+        for( String speciesName: speciesProcessed ) {
+            int speciesTypeKey = SpeciesType.parse(speciesName);
+            speciesTypeKeys.add(speciesTypeKey);
+            taxonIds.add(SpeciesType.getTaxonomicId(speciesTypeKey));
+
+            loggerSummary.info("  OMIA annotations for "+speciesName+": "+dao.getCountOfAnnotationsForSpecies(speciesTypeKey));
+        }
+
         Map <Phenotype, String> pheneRgdTermAccMap = excelReader.getGenePheneTermList();
 
         //read causal_mutations file
-        tabDelimetedTextParser.init(getSpeciesProcessed(), omiaFileDownloader.getLocalCausalMutationsFile());
+        tabDelimetedTextParser.init(taxonIds, omiaFileDownloader.getLocalCausalMutationsFile());
         Map <String, TabDelimetedTextParser.OmiaRecord> genePheneMap = tabDelimetedTextParser.getMutationsMap();
         loggerSummary.info("Total number of Causal Mutations from OMIA : " + genePheneMap.size());
 
@@ -110,7 +121,7 @@ public class Manager {
         Map <String, String> oldNewNcbiIdPairMap = tabDelimetedTextParser.getOldNewNcbiIdPairMap();
 
         //read the OMIA xml file
-        xmlParser.init(omiaFileDownloader, getSpeciesProcessed());
+        xmlParser.init(omiaFileDownloader, taxonIds);
         Map<Integer, Object> omiaPheneMap = xmlParser.readTable(xmlParser.getPheneTableName(),
                 xmlParser.getOmiaIdFieldName(), xmlParser.getPheneIdFieldName(), false);
 
@@ -202,6 +213,12 @@ public class Manager {
         loggerSummary.info("Number of OMIA Phene terms having more than max \"" + getMaxNumberOfPubmedIds() + "\" Pubmed Ids : " + numberOfGenesHaveExcessPubmed);
 
         excelReader.updateLastProcessedMatchingFileRecord();
+
+
+        for( int speciesTypeKey: speciesTypeKeys ) {
+            String speciesName = SpeciesType.getCommonName(speciesTypeKey);
+            loggerSummary.info("  OMIA annotations for "+speciesName+": "+dao.getCountOfAnnotationsForSpecies(speciesTypeKey));
+        }
     }
 
     void processAnnotations(List<Annotation> annotations) throws Exception {

@@ -108,6 +108,18 @@ public class Dao {
     }
 
     /**
+     * get count of annotations given reference rgd id and species
+     * @return count of annotations
+     * @throws Exception on spring framework dao failure
+     */
+    public int getCountOfAnnotationsForSpecies(int speciesTypeKey) throws Exception {
+
+        String query = "SELECT COUNT(*) FROM full_annot a,rgd_ids r "+
+                "WHERE ref_rgd_id=? AND annotated_object_rgd_id=rgd_id AND r.object_status='ACTIVE' AND species_type_key=?";
+        return ontologyXdao.getCount(query, getRefRgdId(), speciesTypeKey);
+    }
+
+    /**
      * Return Gene from RGD by ncbiGeneId if ncbiGeneId is not null
      * if ncbiGeneId is null or it can not get Gene by ncbiGeneId and if it is configured to use GeneSymbol
      *  then it returns Gene using geneSymbol
