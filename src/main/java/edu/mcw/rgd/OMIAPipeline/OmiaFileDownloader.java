@@ -15,7 +15,7 @@ import java.io.FilenameFilter;
  * Date: March 20, 2017
  */
 public class OmiaFileDownloader extends FileDownloader {
-    final static Log logger = LogFactory.getLog("summary");
+    Log logger = LogFactory.getLog("summary");
     private static final String CAUSAL_MUTATION_FILE_NAME = "causal_mutations.txt";
     private static final String XML_FILE_NAME = "omia_xml.gz";
     public static final String DATA_DIRECTORY = "data" + System.getProperty("file.separator");

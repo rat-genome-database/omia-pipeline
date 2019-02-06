@@ -6,6 +6,7 @@ package edu.mcw.rgd.OMIAPipeline;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import edu.mcw.rgd.datamodel.SpeciesType;
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -14,16 +15,12 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 public class XmlParser {
     private Document xmlDoc;
     private OmiaFileDownloader fileDownloader;
-    private Integer speciesKeyForDog;
     private String tableElementName;
     private String nameAttributeName;
     private String rowElementName;
@@ -38,10 +35,11 @@ public class XmlParser {
     private String articlesTableName;
     private String articleIdFieldName;
     private String pubmedIdFieldName;
+    private Set<Integer> taxonIds;
 
-    public void init(OmiaFileDownloader fileDownloader, Integer speciesKeyForDog) throws Exception{
+    public void init(OmiaFileDownloader fileDownloader, Set<Integer> taxonIds) throws Exception{
         this.fileDownloader = fileDownloader;
-        this.speciesKeyForDog = speciesKeyForDog;
+        this.taxonIds = taxonIds;
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -147,9 +145,9 @@ public class XmlParser {
                             }
                         }
                     }
-                    else if (speciesId != null && speciesId.intValue() == getSpeciesKeyForDog() && key !=null && value != null )
+                    else if (speciesId != null && taxonIds.contains(speciesId.intValue()) && key != null && value != null )
                         pairMap.put(key, value);
-                    else if (speciesId == null && key !=null && value != null)
+                    else if (speciesId == null && key != null && value != null)
                         pairMap.put(key, value);
                 }
             }
@@ -312,13 +310,5 @@ public class XmlParser {
 
     public void setPubmedIdFieldName(String pubmedIdFieldName) {
         this.pubmedIdFieldName = pubmedIdFieldName;
-    }
-
-    public Integer getSpeciesKeyForDog() {
-        return speciesKeyForDog;
-    }
-
-    public void setSpeciesKeyForDog(Integer speciesKeyForDog) {
-        this.speciesKeyForDog = speciesKeyForDog;
     }
 }

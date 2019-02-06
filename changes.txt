@@ -1,3 +1,6 @@
+ver 1.1.0, Feb 6, 2019
+  added support for PIG
+
 ver 1.0.4, Nov 29, 2018
   updated urls of source files from OMIA
   updated xml parser: incoming file omia.xml uses OMIA2 schema (previously OMIA)

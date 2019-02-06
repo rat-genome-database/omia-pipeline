@@ -6,15 +6,12 @@ import edu.mcw.rgd.dao.impl.OntologyXDAO;
 import edu.mcw.rgd.dao.impl.XdbIdDAO;
 import edu.mcw.rgd.datamodel.Gene;
 import edu.mcw.rgd.datamodel.RgdId;
-import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.datamodel.XdbId;
 import edu.mcw.rgd.datamodel.ontology.Annotation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by cdursun on 3/29/2017.
@@ -24,19 +21,20 @@ public class Dao {
     private OntologyXDAO ontologyXdao = new OntologyXDAO();
     private GeneDAO geneDao = new GeneDAO();
     private XdbIdDAO xdbIdDao = new XdbIdDAO();
+
     private Date runDate;
     private String omiaDataSourceName;
     private String omiaEvidenceCode;
     private Integer refRgdId;
     private int timeCriteriaForObsoloteAnnotationDeletion;
-
-
     private Integer omiaUserKey;
-    final static Log warningLogger = LogFactory.getLog("warning");
-    final static Log deletedLogger = LogFactory.getLog("deleted");
-    final static Log insertedLogger = LogFactory.getLog("inserted");
-    final static Log updatedLogger = LogFactory.getLog("updated");
     private boolean useGeneSymbolForAnnotation;
+
+    Log warningLogger = LogFactory.getLog("warning");
+    Log deletedLogger = LogFactory.getLog("deleted");
+    Log insertedLogger = LogFactory.getLog("inserted");
+    Log updatedLogger = LogFactory.getLog("updated");
+
 
     public void init(Date runDate){
         this.runDate = runDate;
@@ -87,9 +85,10 @@ public class Dao {
         return unmodifiedAnnots;
     }
 
-    public Annotation createNewAnnotation(String termAcc, TabDelimetedTextParser.OmiaRecord omiaRecord, String pubmedStr) throws Exception{
+    public Annotation createNewAnnotation(String termAcc, TabDelimetedTextParser.OmiaRecord omiaRecord, String pubmedStr, Collection<Integer> speciesTypeKeys) throws Exception{
+
         Annotation annotation = new Annotation();
-        Gene gene = getGeneByNcbiGeneIdOrGeneSymbol(omiaRecord.getNcbiGeneId(), omiaRecord.getGeneSymbol());
+        Gene gene = getGeneByNcbiGeneIdOrGeneSymbol(omiaRecord.getNcbiGeneId(), omiaRecord.getGeneSymbol(), speciesTypeKeys);
         annotation.setTerm(ontologyXdao.getTermByAccId(termAcc).getTerm());
         annotation.setAnnotatedObjectRgdId(gene.getRgdId());
         annotation.setRgdObjectKey(RgdId.OBJECT_KEY_GENES);
@@ -108,6 +107,18 @@ public class Dao {
     }
 
     /**
+     * get count of annotations given reference rgd id and species
+     * @return count of annotations
+     * @throws Exception on spring framework dao failure
+     */
+    public int getCountOfAnnotationsForSpecies(int speciesTypeKey) throws Exception {
+
+        String query = "SELECT COUNT(*) FROM full_annot a,rgd_ids r "+
+                "WHERE ref_rgd_id=? AND annotated_object_rgd_id=rgd_id AND r.object_status='ACTIVE' AND species_type_key=?";
+        return ontologyXdao.getCount(query, getRefRgdId(), speciesTypeKey);
+    }
+
+    /**
      * Return Gene from RGD by ncbiGeneId if ncbiGeneId is not null
      * if ncbiGeneId is null or it can not get Gene by ncbiGeneId and if it is configured to use GeneSymbol
      *  then it returns Gene using geneSymbol
@@ -116,15 +127,18 @@ public class Dao {
      * @return
      * @throws Exception
      */
-    public Gene getGeneByNcbiGeneIdOrGeneSymbol(String ncbiGeneId, String geneSymbol) throws Exception{
+    public Gene getGeneByNcbiGeneIdOrGeneSymbol(String ncbiGeneId, String geneSymbol, Collection<Integer> speciesTypeKeys) throws Exception{
         List<Gene> geneList = null;
         boolean isGenePulledBySymbol = false;
 
-        if (ncbiGeneId != null)
+        if (ncbiGeneId != null) {
             geneList = xdbIdDao.getGenesByXdbId(XdbId.XDB_KEY_ENTREZGENE, ncbiGeneId);
-
-        if ((ncbiGeneId == null || geneList == null || geneList.size() == 0) && useGeneSymbolForAnnotation){
-            geneList = geneDao.getActiveGenes(SpeciesType.DOG, geneSymbol);
+        }
+        if ((ncbiGeneId == null || geneList == null || geneList.size() == 0) && useGeneSymbolForAnnotation) {
+            geneList = new ArrayList<>();
+            for( int speciesTypeKey: speciesTypeKeys ) {
+                geneList.addAll(geneDao.getActiveGenes(speciesTypeKey, geneSymbol));
+            }
             isGenePulledBySymbol = true;
         }
 
@@ -132,8 +146,8 @@ public class Dao {
             warningLogger.info("Found " + geneList.size() + " RGD_IDs for NCBI Gene Id: " + ncbiGeneId + " - Gene Symbol:" + geneSymbol );
         }
         for( Gene gene: geneList) {
-            if (gene.getSpeciesTypeKey() == SpeciesType.DOG && !gene.isVariant()) {
-                if (isGenePulledBySymbol){
+            if( speciesTypeKeys.contains(gene.getSpeciesTypeKey()) && !gene.isVariant()) {
+                if( isGenePulledBySymbol ){
                     warningLogger.info(geneSymbol + " annoted by using gene symbol!");
                 }
                 return gene;
