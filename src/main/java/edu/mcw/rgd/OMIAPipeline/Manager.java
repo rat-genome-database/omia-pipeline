@@ -17,26 +17,18 @@ import java.util.*;
  */
 public class Manager {
     private String version;
-    private final static Log loggerSummary;
-    private final static Log loggerWarning;
-    private final static Log loggerNotFoundNcbiGenes;
-    private final static Log loggerMismatchedPheneNames;
-    private final static Log loggerExcessPubmeds;
+
+    Log loggerSummary = LogFactory.getLog("summary");
+    Log loggerWarning = LogFactory.getLog("warning");
+    Log loggerNotFoundNcbiGenes = LogFactory.getLog("not_found_omia_genes_in_rgd");
+    Log loggerMismatchedPheneNames =  LogFactory.getLog("mismatched_phenes");
+    Log loggerExcessPubmeds = LogFactory.getLog("excess_pubmeds");
 
     private OmiaFileDownloader omiaFileDownloader;
     private TabDelimetedTextParser tabDelimetedTextParser;
     private ExcelReader excelReader;
     private XmlParser xmlParser;
     private Dao dao;
-
-
-    static {
-        loggerSummary = LogFactory.getLog("summary");
-        loggerWarning = LogFactory.getLog("warning");
-        loggerNotFoundNcbiGenes = LogFactory.getLog("not_found_omia_genes_in_rgd");
-        loggerMismatchedPheneNames =  LogFactory.getLog("mismatched_phenes");
-        loggerExcessPubmeds =   LogFactory.getLog("excess_pubmeds");
-    }
 
     private int maxNumberOfPubmedIds;
     private boolean stopProcessingIfNoNewFiles;
@@ -54,12 +46,11 @@ public class Manager {
         try {
             manager.run(time0);
         } catch (Exception e) {
-            Utils.printStackTrace(e, loggerSummary);
+            Utils.printStackTrace(e, manager.loggerSummary);
             throw e;
         }
 
-        loggerSummary.info("========== Elapsed time " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + ". ==========");
-
+        manager.loggerSummary.info("========== Elapsed time " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + ". ==========");
     }
 
     /** LOGIC:
@@ -183,7 +174,7 @@ public class Manager {
 
             if (termAcc != null) {
                 try {
-                    Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr);
+                    Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr, speciesTypeKeys);
                     incomingAnnnotations.add(annotation);
 
                     if (numberOfPubmed > getMaxNumberOfPubmedIds()) {
