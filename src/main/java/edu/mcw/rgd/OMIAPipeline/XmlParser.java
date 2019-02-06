@@ -6,7 +6,6 @@ package edu.mcw.rgd.OMIAPipeline;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import edu.mcw.rgd.datamodel.SpeciesType;
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

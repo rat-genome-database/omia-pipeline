@@ -4,8 +4,7 @@ import com.google.common.collect.Multimap;
 import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.datamodel.ontology.Annotation;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
@@ -18,11 +17,11 @@ import java.util.*;
 public class Manager {
     private String version;
 
-    Log loggerSummary = LogFactory.getLog("summary");
-    Log loggerWarning = LogFactory.getLog("warning");
-    Log loggerNotFoundNcbiGenes = LogFactory.getLog("not_found_omia_genes_in_rgd");
-    Log loggerMismatchedPheneNames =  LogFactory.getLog("mismatched_phenes");
-    Log loggerExcessPubmeds = LogFactory.getLog("excess_pubmeds");
+    Logger loggerSummary = Logger.getLogger("summary");
+    Logger loggerWarning = Logger.getLogger("warning");
+    Logger loggerNotFoundNcbiGenes = Logger.getLogger("not_found_omia_genes_in_rgd");
+    Logger loggerMismatchedPheneNames =  Logger.getLogger("mismatched_phenes");
+    Logger loggerExcessPubmeds = Logger.getLogger("excess_pubmeds");
 
     private OmiaFileDownloader omiaFileDownloader;
     private TabDelimetedTextParser tabDelimetedTextParser;

@@ -8,8 +8,7 @@ import edu.mcw.rgd.datamodel.Gene;
 import edu.mcw.rgd.datamodel.RgdId;
 import edu.mcw.rgd.datamodel.XdbId;
 import edu.mcw.rgd.datamodel.ontology.Annotation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -30,10 +29,10 @@ public class Dao {
     private Integer omiaUserKey;
     private boolean useGeneSymbolForAnnotation;
 
-    Log warningLogger = LogFactory.getLog("warning");
-    Log deletedLogger = LogFactory.getLog("deleted");
-    Log insertedLogger = LogFactory.getLog("inserted");
-    Log updatedLogger = LogFactory.getLog("updated");
+    Logger warningLogger = Logger.getLogger("warning");
+    Logger deletedLogger = Logger.getLogger("deleted");
+    Logger insertedLogger = Logger.getLogger("inserted");
+    Logger updatedLogger = Logger.getLogger("updated");
 
 
     public void init(Date runDate){
