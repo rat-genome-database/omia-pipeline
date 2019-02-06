@@ -6,7 +6,6 @@ package edu.mcw.rgd.OMIAPipeline;
 import edu.mcw.rgd.process.Utils;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.*;
 
 public class TabDelimetedTextParser {
@@ -28,7 +27,7 @@ public class TabDelimetedTextParser {
     }
 
     public Map<String, OmiaRecord> getMutationsMap() throws Exception{
-        BufferedReader buf = new BufferedReader(new FileReader(causalMutationsFileName));
+        BufferedReader buf = Utils.openReader(causalMutationsFileName);
         Map<String, OmiaRecord> genePheneMap = new TreeMap<String, OmiaRecord>();
 
         String[] wordsArray;

@@ -2,8 +2,7 @@ package edu.mcw.rgd.OMIAPipeline;
 
 import edu.mcw.rgd.process.FileDownloader;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -15,7 +14,7 @@ import java.io.FilenameFilter;
  * Date: March 20, 2017
  */
 public class OmiaFileDownloader extends FileDownloader {
-    Log logger = LogFactory.getLog("summary");
+    Logger logger = Logger.getLogger("summary");
     private static final String CAUSAL_MUTATION_FILE_NAME = "causal_mutations.txt";
     private static final String XML_FILE_NAME = "omia_xml.gz";
     public static final String DATA_DIRECTORY = "data" + System.getProperty("file.separator");
