@@ -89,12 +89,10 @@ public class Manager {
 
         loggerSummary.info("Started processing...");
 
-        Set<Integer> speciesTypeKeys = new HashSet<>();
-        Set<Integer> taxonIds = new HashSet<>();
+        Map<Integer, Integer> taxonIds = new HashMap<>(); // taxon-to-speciesTypeKey map
         for( String speciesName: speciesProcessed ) {
             int speciesTypeKey = SpeciesType.parse(speciesName);
-            speciesTypeKeys.add(speciesTypeKey);
-            taxonIds.add(SpeciesType.getTaxonomicId(speciesTypeKey));
+            taxonIds.put(SpeciesType.getTaxonomicId(speciesTypeKey), speciesTypeKey);
 
             loggerSummary.info("  OMIA annotations for "+speciesName+": "+dao.getCountOfAnnotationsForSpecies(speciesTypeKey));
         }
@@ -102,7 +100,7 @@ public class Manager {
         Map <Phenotype, String> pheneRgdTermAccMap = excelReader.getGenePheneTermList();
 
         //read causal_mutations file
-        tabDelimetedTextParser.init(taxonIds, omiaFileDownloader.getLocalCausalMutationsFile());
+        tabDelimetedTextParser.init(taxonIds.keySet(), omiaFileDownloader.getLocalCausalMutationsFile());
         Map <String, TabDelimetedTextParser.OmiaRecord> genePheneMap = tabDelimetedTextParser.getMutationsMap();
         loggerSummary.info("Total number of Causal Mutations from OMIA : " + genePheneMap.size());
 
@@ -111,7 +109,7 @@ public class Manager {
         Map <String, String> oldNewNcbiIdPairMap = tabDelimetedTextParser.getOldNewNcbiIdPairMap();
 
         //read the OMIA xml file
-        xmlParser.init(omiaFileDownloader, taxonIds);
+        xmlParser.init(omiaFileDownloader, taxonIds.keySet());
         Map<Integer, Object> omiaPheneMap = xmlParser.readTable(xmlParser.getPheneTableName(),
                 xmlParser.getOmiaIdFieldName(), xmlParser.getPheneIdFieldName(), false);
 
@@ -168,14 +166,11 @@ public class Manager {
             pubmedStr = (String) result[0];
             Integer numberOfPubmed = (Integer) result[1];
 
-            if( pheneId==319){
-                System.out.println("dupa");
-            }
             String termAcc = pheneRgdTermAccMap.get(new Phenotype(pheneId));
 
             if (termAcc != null) {
                 try {
-                    Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr, speciesTypeKeys);
+                    Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr, taxonIds.get(omiaRecord.taxonId));
                     incomingAnnnotations.add(annotation);
 
                     if (numberOfPubmed > getMaxNumberOfPubmedIds()) {
@@ -207,7 +202,7 @@ public class Manager {
         excelReader.updateLastProcessedMatchingFileRecord();
 
 
-        for( int speciesTypeKey: speciesTypeKeys ) {
+        for( int speciesTypeKey: taxonIds.values() ) {
             String speciesName = SpeciesType.getCommonName(speciesTypeKey);
             loggerSummary.info("  OMIA annotations for "+speciesName+": "+dao.getCountOfAnnotationsForSpecies(speciesTypeKey));
         }

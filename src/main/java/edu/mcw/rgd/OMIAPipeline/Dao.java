@@ -84,10 +84,10 @@ public class Dao {
         return unmodifiedAnnots;
     }
 
-    public Annotation createNewAnnotation(String termAcc, TabDelimetedTextParser.OmiaRecord omiaRecord, String pubmedStr, Collection<Integer> speciesTypeKeys) throws Exception{
+    public Annotation createNewAnnotation(String termAcc, TabDelimetedTextParser.OmiaRecord omiaRecord, String pubmedStr, int speciesTypeKey) throws Exception{
 
         Annotation annotation = new Annotation();
-        Gene gene = getGeneByNcbiGeneIdOrGeneSymbol(omiaRecord.getNcbiGeneId(), omiaRecord.getGeneSymbol(), speciesTypeKeys);
+        Gene gene = getGeneByNcbiGeneIdOrGeneSymbol(omiaRecord.getNcbiGeneId(), omiaRecord.getGeneSymbol(), speciesTypeKey);
         annotation.setTerm(ontologyXdao.getTermByAccId(termAcc).getTerm());
         annotation.setAnnotatedObjectRgdId(gene.getRgdId());
         annotation.setRgdObjectKey(RgdId.OBJECT_KEY_GENES);
@@ -126,7 +126,7 @@ public class Dao {
      * @return
      * @throws Exception
      */
-    public Gene getGeneByNcbiGeneIdOrGeneSymbol(String ncbiGeneId, String geneSymbol, Collection<Integer> speciesTypeKeys) throws Exception{
+    public Gene getGeneByNcbiGeneIdOrGeneSymbol(String ncbiGeneId, String geneSymbol, int speciesTypeKey) throws Exception{
         List<Gene> geneList = null;
         boolean isGenePulledBySymbol = false;
 
@@ -134,10 +134,7 @@ public class Dao {
             geneList = xdbIdDao.getGenesByXdbId(XdbId.XDB_KEY_ENTREZGENE, ncbiGeneId);
         }
         if ((ncbiGeneId == null || geneList == null || geneList.size() == 0) && useGeneSymbolForAnnotation) {
-            geneList = new ArrayList<>();
-            for( int speciesTypeKey: speciesTypeKeys ) {
-                geneList.addAll(geneDao.getActiveGenes(speciesTypeKey, geneSymbol));
-            }
+            geneList = geneDao.getActiveGenes(speciesTypeKey, geneSymbol);
             isGenePulledBySymbol = true;
         }
 
@@ -145,7 +142,7 @@ public class Dao {
             warningLogger.info("Found " + geneList.size() + " RGD_IDs for NCBI Gene Id: " + ncbiGeneId + " - Gene Symbol:" + geneSymbol );
         }
         for( Gene gene: geneList) {
-            if( speciesTypeKeys.contains(gene.getSpeciesTypeKey()) && !gene.isVariant()) {
+            if( (speciesTypeKey == gene.getSpeciesTypeKey()) && !gene.isVariant()) {
                 if( isGenePulledBySymbol ){
                     warningLogger.info(geneSymbol + " annoted by using gene symbol!");
                 }
