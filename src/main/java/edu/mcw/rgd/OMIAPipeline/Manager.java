@@ -18,7 +18,6 @@ public class Manager {
     private String version;
 
     Logger loggerSummary = Logger.getLogger("summary");
-    Logger loggerWarning = Logger.getLogger("warning");
     Logger loggerNotFoundNcbiGenes = Logger.getLogger("not_found_omia_genes_in_rgd");
     Logger loggerMismatchedPheneNames =  Logger.getLogger("mismatched_phenes");
     Logger loggerExcessPubmeds = Logger.getLogger("excess_pubmeds");
@@ -157,7 +156,7 @@ public class Manager {
             // sometimes XML file doesn't contain any record for omia_id in causal_mutations_file
             // in this case pheneId becomes null, skip those records
             if (pheneId == null) {
-                loggerWarning.info("Omia record with id " + omiaId + " from causal_mutations_file can't be found in XML file.");
+                loggerSummary.warn("WARNING: Omia record with id " + omiaId + " from causal_mutations_file can't be found in XML file!");
                 continue;
             }
             Collection<Object> articleIdList = articlePheneMap.get(pheneId);
@@ -171,11 +170,13 @@ public class Manager {
             if (termAcc != null) {
                 try {
                     Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr, taxonIds.get(omiaRecord.taxonId));
-                    incomingAnnnotations.add(annotation);
+                    if( annotation!=null ) {
+                        incomingAnnnotations.add(annotation);
 
-                    if (numberOfPubmed > getMaxNumberOfPubmedIds()) {
-                        numberOfGenesHaveExcessPubmed++;
-                        loggerExcessPubmeds.info("Gene : " + omiaRecord.getNcbiGeneId() + " - Phene : " + " has " + numberOfPubmed + " Pubmed Ids");
+                        if (numberOfPubmed > getMaxNumberOfPubmedIds()) {
+                            numberOfGenesHaveExcessPubmed++;
+                            loggerExcessPubmeds.info("Gene : " + omiaRecord.getNcbiGeneId() + " - Phene : " + " has " + numberOfPubmed + " Pubmed Ids");
+                        }
                     }
                 } catch (RgdIdNotFoundException re) {
                     loggerNotFoundNcbiGenes.info(re);

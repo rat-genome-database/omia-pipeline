@@ -6,6 +6,9 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -113,14 +116,14 @@ public class OmiaFileDownloader extends FileDownloader {
         if (localFileList == null || localFileList.length == 0)
             return null;
 
-        File newestFile = localFileList[0];
-
-        for (int i = 1; i < localFileList.length; i++) {
-            if ( newestFile.lastModified() <= localFileList[i].lastModified())
-                newestFile = localFileList[i];
+        List<String> filePaths = new ArrayList<>(localFileList.length);
+        for( File f: localFileList ) {
+            filePaths.add(f.getPath());
         }
+        Collections.sort(filePaths);
 
-        return newestFile.getPath();
+        // the newest file will be at the end of the list
+        return filePaths.get(filePaths.size()-1);
     }
 
     public void deleteOldFiles(){

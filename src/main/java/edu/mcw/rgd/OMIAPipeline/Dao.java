@@ -8,6 +8,7 @@ import edu.mcw.rgd.datamodel.Gene;
 import edu.mcw.rgd.datamodel.RgdId;
 import edu.mcw.rgd.datamodel.XdbId;
 import edu.mcw.rgd.datamodel.ontology.Annotation;
+import edu.mcw.rgd.datamodel.ontologyx.Term;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -29,7 +30,7 @@ public class Dao {
     private Integer omiaUserKey;
     private boolean useGeneSymbolForAnnotation;
 
-    Logger warningLogger = Logger.getLogger("warning");
+    Logger warningLogger = Logger.getLogger("summary");
     Logger deletedLogger = Logger.getLogger("deleted");
     Logger insertedLogger = Logger.getLogger("inserted");
     Logger updatedLogger = Logger.getLogger("updated");
@@ -86,9 +87,15 @@ public class Dao {
 
     public Annotation createNewAnnotation(String termAcc, TabDelimetedTextParser.OmiaRecord omiaRecord, String pubmedStr, int speciesTypeKey) throws Exception{
 
+        Term term = ontologyXdao.getTermByAccId(termAcc);
+        if( term==null ) {
+            warningLogger.warn("WARNING: term with accession "+termAcc+" not found in database!");
+            return null;
+        }
+
         Annotation annotation = new Annotation();
         Gene gene = getGeneByNcbiGeneIdOrGeneSymbol(omiaRecord.getNcbiGeneId(), omiaRecord.getGeneSymbol(), speciesTypeKey);
-        annotation.setTerm(ontologyXdao.getTermByAccId(termAcc).getTerm());
+        annotation.setTerm(term.getTerm());
         annotation.setAnnotatedObjectRgdId(gene.getRgdId());
         annotation.setRgdObjectKey(RgdId.OBJECT_KEY_GENES);
         annotation.setDataSrc(getOmiaDataSourceName());
