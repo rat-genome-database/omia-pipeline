@@ -23,17 +23,17 @@ repositories {
 }
 
 dependencies {
-    compile 'org.apache.commons:commons-dbcp2:2.5.0'
+    compile 'org.apache.commons:commons-dbcp2:2.6.0'
     compile 'commons-net:commons-net:3.6'
     compile 'log4j:log4j:1.2.17'
-    compile 'org.springframework:spring-beans:5.1.4.RELEASE'
-    compile 'org.springframework:spring-jdbc:5.1.4.RELEASE'
+    compile 'org.springframework:spring-beans:5.1.5.RELEASE'
+    compile 'org.springframework:spring-jdbc:5.1.5.RELEASE'
     compile 'com.oracle:ojdbc6:11.2.0.4.0-atlassian-hosted'
-    compile 'org.apache.httpcomponents:httpclient:4.5.7'
+    compile 'org.apache.httpcomponents:httpclient:4.5.8'
     compile 'commons-io:commons-io:2.6'
-    compile 'org.apache.poi:poi-ooxml:4.0.1'
-    compile 'org.apache.poi:poi:4.0.1'
-    compile 'com.google.guava:guava:23.0'
+    compile 'org.apache.poi:poi-ooxml:4.1.0'
+    compile 'org.apache.poi:poi:4.1.0'
+    compile 'com.google.guava:guava:23.1-jre'
 
     compile fileTree(dir: 'lib', include: '*.jar')
 }

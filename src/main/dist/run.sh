@@ -22,7 +22,6 @@ mailx -s "[$SERVER] OMIA Pipeline Summary" $EMAILLIST < $APPDIR/logs/summary.log
 excess_pubmeds_log_file=$APPDIR/logs/excess_pubmeds.log
 mismatched_phenes_log_file=$APPDIR/logs/mismatched_phenes.log
 not_found_omia_genes_in_rgd_log_file=$APPDIR/logs/not_found_omia_genes_in_rgd.log
-warning_log_file=$APPDIR/logs/warning.log
 
 current=`date +%s`
 
@@ -42,10 +41,4 @@ last_modified=`stat -c "%Y" $not_found_omia_genes_in_rgd_log_file`
 if [ -s "$not_found_omia_genes_in_rgd_log_file" ] && [ $(($current-$last_modified)) -lt 180 ]  #if it has data and new then send in email
 then
     mailx -s "[$SERVER] OMIA Pipeline Not Found Ncbi Gene Ids/Symbols in RGD" $EMAILLIST < $not_found_omia_genes_in_rgd_log_file
-fi
-
-last_modified=`stat -c "%Y" $warning_log_file`
-if [ -s "$warning_log_file" ] && [ $(($current-$last_modified)) -lt 180 ] #if it has data and new then send in email
-then
-    mailx -s "[$SERVER] OMIA Pipeline Warning " $DEVELOPER < $warning_log_file
 fi
