@@ -1,10 +1,7 @@
 package edu.mcw.rgd.OMIAPipeline;
 
 import edu.mcw.rgd.process.Utils;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
@@ -24,9 +21,9 @@ public class ExcelReader {
     // file name read from LAST_PROCESSED_MATCHING_FILE_RECORD_FILE_NAME
     private String lastProcessedRgdOmiaMatchingFileName;
     private String matchingFileNameTobeProcessed;
-    private byte columnNoForPheneName;
-    private byte columnNoForRgdAccId;
-    private byte columnNoForPheneId;
+    private int columnNoForRgdAccId;
+    private int columnNoForPheneId;
+    private int columnNoForOmiaId;
 
     public boolean isRgdOmiaMatchingFileNew() {
         return isRgdOmiaMatchingFileNew;
@@ -35,9 +32,7 @@ public class ExcelReader {
     private boolean isRgdOmiaMatchingFileNew;
 
     public void init() throws Exception{
-        String newestFileName = "";
-
-        newestFileName = OmiaFileDownloader.getTheNewestLocalFileName(OmiaFileDownloader.DATA_DIRECTORY, rgdOmiaMatchingFileName);
+        String newestFileName = OmiaFileDownloader.getTheNewestLocalFileName(OmiaFileDownloader.DATA_DIRECTORY, rgdOmiaMatchingFileName);
 
         if (newestFileName == null){
             System.out.println(rgdOmiaMatchingFileName + " is required under  " + new File (OmiaFileDownloader.DATA_DIRECTORY).getAbsolutePath() + " directory to run the pipeline!");
@@ -76,12 +71,12 @@ public class ExcelReader {
         if (getLastProcessedRgdOmiaMatchingFileName() != null)
             Utils.writeStringToFile(getLastProcessedRgdOmiaMatchingFileName(), OmiaFileDownloader.DATA_DIRECTORY + LAST_PROCESSED_MATCHING_FILE_RECORD_FILE_NAME);
     }
-    public Map<Phenotype, String> getGenePheneTermList() throws Exception {
 
-        Map<Phenotype, String> pairMap = new TreeMap<>();
-        int cell_count = 0;
-        String termAcc, pheneName;
-        Integer pheneId;
+    public Map<Integer, String> getGenePheneTermList(Map<Integer, String> omiaIdToRgdTermAccMap) throws Exception {
+
+        Map<Integer, String> pairMap = new TreeMap<>();
+        String termAcc;
+        Integer pheneId, omiaId;
 
         FileInputStream excelFile = new FileInputStream(new File(OmiaFileDownloader.DATA_DIRECTORY + matchingFileNameTobeProcessed ));
         Workbook workbook = new XSSFWorkbook(excelFile);
@@ -95,18 +90,19 @@ public class ExcelReader {
             Row currentRow = iterator.next();
             Iterator<Cell> cellIterator = currentRow.iterator();
             pheneId = null;
-            pheneName = null;
+            omiaId = null;
             termAcc = null;
-            cell_count = 0;
             while (cellIterator.hasNext()) {
 
                 Cell currentCell = cellIterator.next();
-                if (cell_count == getColumnNoForPheneId()) {
-                    pheneId = (int)currentCell.getNumericCellValue();
-                }
-                else if (cell_count == getColumnNoForPheneName()) {
-                    pheneName = currentCell.getStringCellValue();
-                } else if (cell_count == getColumnNoForRgdAccId()) {
+                CellType cellType = currentCell.getCellType();
+                int colIndex = currentCell.getColumnIndex();
+
+                if (colIndex == getColumnNoForPheneId() && cellType == CellType.NUMERIC ) {
+                    pheneId = (int) currentCell.getNumericCellValue();
+                } else if (colIndex == getColumnNoForOmiaId() && cellType == CellType.NUMERIC) {
+                    omiaId = (int)currentCell.getNumericCellValue();
+                } else if (colIndex == getColumnNoForRgdAccId()) {
                     termAcc = currentCell.getStringCellValue();
                     if (termAcc != null){
                         if (termAcc.equals("")) {
@@ -115,17 +111,22 @@ public class ExcelReader {
                             termAcc = termAcc.replace(String.valueOf((char) 160), " ").trim();;
                         }
                     }
-
                 }
-                cell_count++;
             }
-            pairMap.put(new Phenotype(pheneId, pheneName), termAcc);
+
+            if( pheneId!=null ) {
+                pairMap.put(pheneId, termAcc);
+            }
+            if( omiaId!=null ) {
+                omiaIdToRgdTermAccMap.put(omiaId, termAcc);
+            }
         }
 
         excelFile.close();
 
         return pairMap;
     }
+
     public String getMatchingFileNameTobeProcessed() {
         return matchingFileNameTobeProcessed;
     }
@@ -134,28 +135,19 @@ public class ExcelReader {
         this.matchingFileNameTobeProcessed = matchingFileNameTobeProcessed;
     }
 
-
-    public void setColumnNoForPheneName(byte columnNoForPheneName) {
-        this.columnNoForPheneName = columnNoForPheneName;
-    }
-
-    public byte getColumnNoForPheneName() {
-        return columnNoForPheneName;
-    }
-
-    public void setColumnNoForRgdAccId(byte columnNoForRgdAccId) {
+    public void setColumnNoForRgdAccId(int columnNoForRgdAccId) {
         this.columnNoForRgdAccId = columnNoForRgdAccId;
     }
 
-    public byte getColumnNoForRgdAccId() {
+    public int getColumnNoForRgdAccId() {
         return columnNoForRgdAccId;
     }
 
-    public void setColumnNoForPheneId(byte columnNoForPheneId) {
+    public void setColumnNoForPheneId(int columnNoForPheneId) {
         this.columnNoForPheneId = columnNoForPheneId;
     }
 
-    public byte getColumnNoForPheneId() {
+    public int getColumnNoForPheneId() {
         return columnNoForPheneId;
     }
     public String getRgdOmiaMatchingFileName() {
@@ -164,5 +156,13 @@ public class ExcelReader {
 
     public void setRgdOmiaMatchingFileName(String rgdOmiaMatchingFileName) {
         this.rgdOmiaMatchingFileName = rgdOmiaMatchingFileName;
+    }
+
+    public void setColumnNoForOmiaId(int columnNoForOmiaId) {
+        this.columnNoForOmiaId = columnNoForOmiaId;
+    }
+
+    public int getColumnNoForOmiaId() {
+        return columnNoForOmiaId;
     }
 }

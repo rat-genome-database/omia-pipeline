@@ -108,6 +108,7 @@ public class Dao {
         annotation.setCreatedBy(getOmiaUserKey());
         annotation.setLastModifiedBy(getOmiaUserKey());
         annotation.setXrefSource(pubmedStr);
+        annotation.setNotes(omiaRecord.getPheneName());
 
         return annotation;
     }
