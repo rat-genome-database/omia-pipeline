@@ -96,7 +96,11 @@ public class Manager {
             loggerSummary.info("  OMIA annotations for "+speciesName+": "+dao.getCountOfAnnotationsForSpecies(speciesTypeKey));
         }
 
-        Map <Phenotype, String> pheneRgdTermAccMap = excelReader.getGenePheneTermList();
+        // supplementary map of omia_id to term acc in RGD
+        Map <Integer, String> omiaIdToRgdTermAccMap = new HashMap<>();
+        // map of phene_id to term acc in RGD
+        Map <Integer, String> pheneRgdTermAccMap = excelReader.getGenePheneTermList(omiaIdToRgdTermAccMap);
+
 
         //read causal_mutations file
         tabDelimetedTextParser.init(taxonIds.keySet(), omiaFileDownloader.getLocalCausalMutationsFile());
@@ -109,8 +113,15 @@ public class Manager {
 
         //read the OMIA xml file
         xmlParser.init(omiaFileDownloader, taxonIds.keySet());
+
+        // omia_id ==> phene_id
         Map<Integer, Object> omiaPheneMap = xmlParser.readTable(xmlParser.getPheneTableName(),
                 xmlParser.getOmiaIdFieldName(), xmlParser.getPheneIdFieldName(), false);
+
+        Map<Object, Integer> pheneIdToOmiaIdMap = new HashMap<>();
+        for( Map.Entry<Integer, Object> entry: omiaPheneMap.entrySet() ) {
+            pheneIdToOmiaIdMap.put(entry.getValue(), entry.getKey());
+        }
 
         Multimap<Integer, Object> articlePheneMap = xmlParser.readTableMultiKey(xmlParser.getArticlePheneTableName(),
                 xmlParser.getSpeciesSpecificPheneIdFieldName(), xmlParser.getArticleIdFieldName(), false);
@@ -152,20 +163,23 @@ public class Manager {
                 numberOfMissingGeneIdsInCausalMutationsFile++;
             }
 
+            Integer numberOfPubmed = 0;
+            pubmedStr = "";
+
             pheneId = (Integer) omiaPheneMap.get(omiaId);
             // sometimes XML file doesn't contain any record for omia_id in causal_mutations_file
             // in this case pheneId becomes null, skip those records
             if (pheneId == null) {
-                loggerSummary.warn("WARNING: Omia record with id " + omiaId + " from causal_mutations_file can't be found in XML file!");
-                continue;
+                loggerSummary.warn("WARNING: Omia record with id " + omiaId + " from causal_mutations_file can't be found in XML file! (no articles available)");
             }
-            Collection<Object> articleIdList = articlePheneMap.get(pheneId);
+            else {
+                Collection<Object> articleIdList = articlePheneMap.get(pheneId);
+                Object[] result = createPubmedString(articleIdList, articlesMap);
+                pubmedStr = (String) result[0];
+                numberOfPubmed = (Integer) result[1];
+            }
 
-            Object[] result = createPubmedString(articleIdList, articlesMap);
-            pubmedStr = (String) result[0];
-            Integer numberOfPubmed = (Integer) result[1];
-
-            String termAcc = pheneRgdTermAccMap.get(new Phenotype(pheneId));
+            String termAcc = pheneId!=null ? pheneRgdTermAccMap.get(pheneId) : omiaIdToRgdTermAccMap.get(omiaId);
 
             if (termAcc != null) {
                 try {

@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="main" class="edu.mcw.rgd.OMIAPipeline.Manager">
-		<property name="version" value="OMIA Pipeline   build Sep 11, 2019" />
+		<property name="version" value="OMIA Pipeline   build Sep 12, 2019" />
 		<property name="omiaFileDownloader" ref="omiaFileDownloader"/>
 		<property name="xmlParser" ref="xmlParser"/>
 		<property name="tabDelimetedTextParser" ref="tabDelimetedTextParser"/>
@@ -70,8 +70,8 @@
 	<bean id="excelReader" class="edu.mcw.rgd.OMIAPipeline.ExcelReader">
 		<property name="rgdOmiaMatchingFileName" value="RGD_OMIA_matching.xlsx"/>
 		<property name="columnNoForPheneId" value="0"/>
-		<property name="columnNoForPheneName" value="1"/>
 		<property name="columnNoForRgdAccId" value="2"/>
+		<property name="columnNoForOmiaId" value="4"/>
 
 	</bean>
 </beans>
