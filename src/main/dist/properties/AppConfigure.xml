@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="main" class="edu.mcw.rgd.OMIAPipeline.Manager">
-		<property name="version" value="OMIA Pipeline   build Sep 12, 2019" />
+		<property name="version" value="OMIA Pipeline   build Sep 13, 2019" />
 		<property name="omiaFileDownloader" ref="omiaFileDownloader"/>
 		<property name="xmlParser" ref="xmlParser"/>
 		<property name="tabDelimetedTextParser" ref="tabDelimetedTextParser"/>
@@ -22,7 +22,6 @@
 		<property name="externalXmlFile" value="https://omia.org/dumps/omia.xml.gz"/>
 		<property name="appendDateStamp" value="true"/>
 		<property name="useCompression" value="false"/>
-		<property name="maxNumberOfLocalFiles" value="5"/>
 	</bean>
 	
 	<bean id="dao" class="edu.mcw.rgd.OMIAPipeline.Dao">
