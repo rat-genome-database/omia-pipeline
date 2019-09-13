@@ -28,7 +28,6 @@ public class OmiaFileDownloader extends FileDownloader {
     private boolean isCausalMutationFileNew = true;
     private boolean isXmlFileNew = true;
 
-    private int maxNumberOfLocalFiles;
     private String externalCausalMutationFile;
     private String externalXmlFile;
 
@@ -39,7 +38,6 @@ public class OmiaFileDownloader extends FileDownloader {
         setLocalCausalMutationsFile(getLocalFile());
         setXmlFileNew(downloadIfNew(XML_FILE_NAME, localXmlFile, externalXmlFile));
         setLocalXmlFile(getLocalFile());
-        deleteOldFiles();
     }
 
 
@@ -93,23 +91,6 @@ public class OmiaFileDownloader extends FileDownloader {
         });
     }
 
-    public void deleteTheOldestFile(String fileDirectory, String fileName){
-        File[] localFileList = listLocalFiles(fileDirectory, fileName);
-
-        if (localFileList == null)
-            return;
-
-        File oldestFile = localFileList[0];
-
-        for (int i = 1; i < localFileList.length; i++) {
-            if ( oldestFile.lastModified() >= localFileList[i].lastModified())
-                oldestFile = localFileList[i];
-        }
-
-        oldestFile.delete();
-        logger.info("Deleted the oldest file " + oldestFile.getName());
-    }
-
     public static String getTheNewestLocalFileName(String fileDirectory, String fileName) throws Exception{
         File[] localFileList = listLocalFiles(fileDirectory, fileName);
 
@@ -125,18 +106,6 @@ public class OmiaFileDownloader extends FileDownloader {
         // the newest file will be at the end of the list
         return filePaths.get(filePaths.size()-1);
     }
-
-    public void deleteOldFiles(){
-
-        if (checkNumberOfLocalFiles(CAUSAL_MUTATION_FILE_NAME) > maxNumberOfLocalFiles){
-            deleteTheOldestFile(this.DATA_DIRECTORY, CAUSAL_MUTATION_FILE_NAME);
-        }
-
-        if (checkNumberOfLocalFiles(XML_FILE_NAME) > maxNumberOfLocalFiles){
-            deleteTheOldestFile(this.DATA_DIRECTORY, XML_FILE_NAME);
-        }
-    }
-
 
     public String getLocalXmlFile() {
         return localXmlFile;
@@ -185,14 +154,5 @@ public class OmiaFileDownloader extends FileDownloader {
     public void setXmlFileNew(boolean xmlFileNew) {
         isXmlFileNew = xmlFileNew;
     }
-
-    public int getMaxNumberOfLocalFiles() {
-        return maxNumberOfLocalFiles;
-    }
-
-    public void setMaxNumberOfLocalFiles(int maxNumberOfLocalFiles) {
-        this.maxNumberOfLocalFiles = maxNumberOfLocalFiles;
-    }
-
 
 }
