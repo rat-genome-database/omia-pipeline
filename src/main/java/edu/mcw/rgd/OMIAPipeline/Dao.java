@@ -73,16 +73,7 @@ public class Dao {
 
     public List<Annotation> getUnmodifiedAnnotationsSince(int min ) throws Exception {
         // calls getAnnotationsModifiedBeforeTimestamp method by subtracting @param min minutes from runDate
-        List<Annotation> unmodifiedAnnots = annotationDao.getAnnotationsModifiedBeforeTimestamp(getOmiaUserKey(), new Date(this.runDate.getTime() - (min * 1000 * 60) ));;
-        // also to avoid removing annotations created by DoAnnotator pipeline, we filter them out
-        Iterator<Annotation> it = unmodifiedAnnots.iterator();
-        while( it.hasNext() ) {
-            Annotation annot = it.next();
-            if( annot.getAspect().equals("I") ) { // 'I' - aspect for DO ontology; terms created by DoAnnot pipeline
-                it.remove();
-            }
-        }
-        return unmodifiedAnnots;
+        return annotationDao.getAnnotationsModifiedBeforeTimestamp(getOmiaUserKey(), new Date(this.runDate.getTime() - (min * 1000 * 60) ));
     }
 
     public Annotation createNewAnnotation(String termAcc, TabDelimetedTextParser.OmiaRecord omiaRecord, String pubmedStr, int speciesTypeKey) throws Exception{
