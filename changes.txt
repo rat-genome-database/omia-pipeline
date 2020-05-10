@@ -1,3 +1,6 @@
+May 10, 2020
+  updated jar dependencies
+
 Oct 25, 2019
   code cleanup (obsolete 'I' aspect processing)
 
