@@ -29,8 +29,8 @@ dependencies {
     compile 'com.oracle.ojdbc:ojdbc8:19.3.0.0'
     compile 'org.apache.poi:poi-ooxml:4.1.1'
     compile 'org.apache.poi:poi:4.1.1'
-    compile 'org.springframework:spring-beans:5.2.0.RELEASE'
-    compile 'org.springframework:spring-jdbc:5.2.0.RELEASE'
+    compile 'org.springframework:spring-beans:5.2.1.RELEASE'
+    compile 'org.springframework:spring-jdbc:5.2.1.RELEASE'
 
     compile fileTree(dir: 'lib', include: '*.jar')
 }
