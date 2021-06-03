@@ -26,7 +26,7 @@
 	
 	<bean id="dao" class="edu.mcw.rgd.OMIAPipeline.Dao">
 		<property name="omiaDataSourceName" value="OMIA"/>
-		<property name="omiaEvidenceCode" value="IEA"/>
+		<property name="omiaEvidenceCode" value="IAGP"/>
 		<property name="omiaUserKey" value="444"/>
 		<property name="refRgdId" value="12801476"/>
 		<property name="timeCriteriaForObsoloteAnnotationDeletion" value="5"/>

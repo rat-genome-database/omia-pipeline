@@ -1,5 +1,6 @@
 Jun 03, 2021
   updated term matching file
+  changed evidence code for annotations to IAGP from IEA, per RGDD-1768
 
 Apr 27, 2021
   updated url to source data
