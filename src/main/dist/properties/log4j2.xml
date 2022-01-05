@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <!-- <PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/> -->
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] %msg%n"/>
+        </Console>
+
+        <RollingFile name="status" append="true" fileName="logs/status.log" filePattern="logs/status.log.%d{yyyy-MM}">
+            <PatternLayout pattern="%d %p [%c] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <File name="summary" append="false" fileName="logs/summary.log">
+            <PatternLayout pattern="%m%n"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+        <RollingFile name="detail" append="true" fileName="logs/detail.log" filePattern="logs/detail.log.%d{yyyy-MM}">
+            <PatternLayout pattern="%d %p [%c] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="inserted" append="true" fileName="logs/inserted.log" filePattern="logs/inserted.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="updated" append="true" fileName="logs/updated.log" filePattern="logs/updated.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="deleted" append="true" fileName="logs/deleted.log" filePattern="logs/deleted.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="not_found_omia_genes_in_rgd" append="true" fileName="logs/not_found_omia_genes_in_rgd.log" filePattern="logs/not_found_omia_genes_in_rgd.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <File name="not_found_omia_genes_in_rgd_summary" append="false" fileName="logs/not_found_omia_genes_in_rgd_summary.log">
+            <PatternLayout pattern="%m%n"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+
+        <RollingFile name="mismatched_phenes" append="true" fileName="logs/mismatched_phenes.log" filePattern="logs/mismatched_phenes.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <File name="mismatched_phenes_summary" append="false" fileName="logs/mismatched_phenes_summary.log">
+            <PatternLayout pattern="%m%n"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+
+        <RollingFile name="excess_pubmeds" append="true" fileName="logs/excess_pubmeds.log" filePattern="logs/excess_pubmeds.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <File name="excess_pubmeds_summary" append="false" fileName="logs/excess_pubmeds_summary.log">
+            <PatternLayout pattern="%m%n"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <!-- daily -->
+        <Logger name="summary" level="debug" additivity="false">
+            <AppenderRef ref="status" level="info"/>
+            <AppenderRef ref="summary" level="info"/><!-- human readable -->
+            <AppenderRef ref="detail"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+
+        <!-- monthly -->
+        <Logger name="inserted" level="debug" additivity="false">
+            <AppenderRef ref="inserted"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="updated" level="debug" additivity="false">
+            <AppenderRef ref="updated"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="deleted" level="debug" additivity="false">
+            <AppenderRef ref="deleted"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+
+        <Logger name="not_found_omia_genes_in_rgd" level="debug" additivity="false">
+            <AppenderRef ref="not_found_omia_genes_in_rgd_summary"/>
+            <AppenderRef ref="not_found_omia_genes_in_rgd"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="mismatched_phenes" level="debug" additivity="false">
+            <AppenderRef ref="mismatched_phenes_summary"/>
+            <AppenderRef ref="mismatched_phenes"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="excess_pubmeds" level="debug" additivity="false">
+            <AppenderRef ref="excess_pubmeds_summary"/>
+            <AppenderRef ref="excess_pubmeds"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+    </Loggers>
+</Configuration>

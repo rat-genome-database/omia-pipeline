@@ -1,3 +1,6 @@
+Jan 05, 2022
+  updated log4j to avoid zero day vulnerability
+
 Jun 03, 2021
   updated term matching file
   changed evidence code for annotations to IAGP from IEA, per RGDD-1768

@@ -4,24 +4,24 @@
 SERVER=`hostname -s | tr '[a-z]' '[A-Z]'`
 APPNAME=OMIAPipeline
 APPDIR=/home/rgddata/pipelines/$APPNAME
-EMAILLIST=cdursun@mcw.edu,mtutaj@mcw.edu
-DEVELOPER=cdursun@mcw.edu,mtutaj@mcw.edu
+EMAILLIST=mtutaj@mcw.edu
+DEVELOPER=mtutaj@mcw.edu
 
 if [ "$SERVER" == "REED" ]; then
-  EMAILLIST=cdursun@mcw.edu,mtutaj@mcw.edu,jrsmith@mcw.edu,slaulede@mcw.edu
+  EMAILLIST=mtutaj@mcw.edu,jrsmith@mcw.edu,slaulede@mcw.edu
 fi
 
 cd $APPDIR
 
 java -Dspring.config=$APPDIR/../properties/default_db2.xml \
-    -Dlog4j.configuration=file://$APPDIR/properties/log4j.properties \
+    -Dlog4j.configurationFile=file://$APPDIR/properties/log4j2.xml \
     -jar lib/$APPNAME.jar "$@" 2>&1
 
 mailx -s "[$SERVER] OMIA Pipeline Summary" $EMAILLIST < $APPDIR/logs/summary.log
 
-excess_pubmeds_log_file=$APPDIR/logs/excess_pubmeds.log
-mismatched_phenes_log_file=$APPDIR/logs/mismatched_phenes.log
-not_found_omia_genes_in_rgd_log_file=$APPDIR/logs/not_found_omia_genes_in_rgd.log
+excess_pubmeds_log_file=$APPDIR/logs/excess_pubmeds_summary.log
+mismatched_phenes_log_file=$APPDIR/logs/mismatched_phenes_summary.log
+not_found_omia_genes_in_rgd_log_file=$APPDIR/logs/not_found_omia_genes_in_rgd_summary.log
 
 current=`date +%s`
 

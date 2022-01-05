@@ -9,7 +9,8 @@ import edu.mcw.rgd.datamodel.RgdId;
 import edu.mcw.rgd.datamodel.XdbId;
 import edu.mcw.rgd.datamodel.ontology.Annotation;
 import edu.mcw.rgd.datamodel.ontologyx.Term;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -30,10 +31,10 @@ public class Dao {
     private Integer omiaUserKey;
     private boolean useGeneSymbolForAnnotation;
 
-    Logger warningLogger = Logger.getLogger("summary");
-    Logger deletedLogger = Logger.getLogger("deleted");
-    Logger insertedLogger = Logger.getLogger("inserted");
-    Logger updatedLogger = Logger.getLogger("updated");
+    Logger warningLogger = LogManager.getLogger("summary");
+    Logger deletedLogger = LogManager.getLogger("deleted");
+    Logger insertedLogger = LogManager.getLogger("inserted");
+    Logger updatedLogger = LogManager.getLogger("updated");
 
 
     public void init(Date runDate){
