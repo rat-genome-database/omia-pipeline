@@ -22,18 +22,18 @@ repositories {
 }
 
 dependencies {
-    compile 'org.apache.commons:commons-dbcp2:2.7.0'
-    compile 'commons-io:commons-io:2.6'
-    compile 'commons-net:commons-net:3.6'
-    compile 'com.google.guava:guava:23.6-jre'
-    compile 'org.apache.httpcomponents:httpclient:4.5.12'
-    compile 'org.apache.logging.log4j:log4j-api:2.17.0'
-    compile 'org.apache.logging.log4j:log4j-core:2.17.0'
-    compile 'com.oracle.ojdbc:ojdbc8:19.3.0.0'
-    compile 'org.apache.poi:poi-ooxml:4.1.2'
-    compile 'org.apache.poi:poi:4.1.2'
-    compile 'org.springframework:spring-beans:5.2.3.RELEASE'
-    compile 'org.springframework:spring-jdbc:5.2.3.RELEASE'
+    compile 'org.apache.commons:commons-dbcp2:2.8.0'
+    compile 'commons-io:commons-io:2.7'
+    compile 'commons-net:commons-net:3.7'
+    compile 'com.google.guava:guava:24.1.1-jre'
+    compile 'org.apache.httpcomponents:httpclient:4.5.13'
+    compile 'org.apache.logging.log4j:log4j-api:2.17.1'
+    compile 'org.apache.logging.log4j:log4j-core:2.17.1'
+    compile 'com.oracle.database.jdbc:ojdbc8:19.6.0.0'
+    compile 'org.apache.poi:poi-ooxml:5.0.0'
+    compile 'org.apache.poi:poi:5.0.0'
+    compile 'org.springframework:spring-beans:5.2.4.RELEASE'
+    compile 'org.springframework:spring-jdbc:5.2.4.RELEASE'
 
     compile fileTree(dir: 'lib', include: '*.jar')
 }

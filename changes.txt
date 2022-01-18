@@ -1,3 +1,6 @@
+Jan 17, 2022
+  updated dependencies (poi from 4.x to 5.x)
+
 Jan 05, 2022
   updated log4j to avoid zero day vulnerability
 
