@@ -2,7 +2,7 @@
 . /etc/profile
 
 SERVER=`hostname -s | tr '[a-z]' '[A-Z]'`
-APPNAME=OMIAPipeline
+APPNAME="omia-pipeline"
 APPDIR=/home/rgddata/pipelines/$APPNAME
 EMAILLIST=mtutaj@mcw.edu
 DEVELOPER=mtutaj@mcw.edu
