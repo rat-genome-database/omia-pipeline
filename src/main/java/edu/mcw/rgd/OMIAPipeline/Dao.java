@@ -112,9 +112,7 @@ public class Dao {
      */
     public int getCountOfAnnotationsForSpecies(int speciesTypeKey) throws Exception {
 
-        String query = "SELECT COUNT(*) FROM full_annot a,rgd_ids r "+
-                "WHERE ref_rgd_id=? AND annotated_object_rgd_id=rgd_id AND r.object_status='ACTIVE' AND species_type_key=?";
-        return ontologyXdao.getCount(query, getRefRgdId(), speciesTypeKey);
+        return annotationDao.getCountOfAnnotationsByReference(getRefRgdId(), speciesTypeKey);
     }
 
     /**
