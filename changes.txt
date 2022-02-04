@@ -1,3 +1,6 @@
+Feb 04, 2022
+  supplied improved mappings file
+
 Feb 03, 2022
   dao: replaced custom code with call to rgdcore
 
