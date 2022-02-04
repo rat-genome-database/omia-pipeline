@@ -1,3 +1,6 @@
+Feb 03, 2022
+  dao: replaced custom code with call to rgdcore
+
 Feb 02, 2022
   renamed dist from 'OMIAPipeline' to 'omia-pipeline'
 

@@ -6,6 +6,7 @@ package edu.mcw.rgd.OMIAPipeline;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import edu.mcw.rgd.process.Utils;
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -165,9 +166,8 @@ public class XmlParser {
             return null;
         }
 
-        //processLog.info("Parsing file: " + localFileName);
-
-        return new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(localFileName))));
+        //return new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(localFileName))));
+        return Utils.openReaderUtf8(localFileName);
     }
 
     /**
