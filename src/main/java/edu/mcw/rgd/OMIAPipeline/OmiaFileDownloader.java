@@ -11,11 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 /**
- * Created by IntelliJ IDEA.
- * User: cdursun
- * Date: March 20, 2017
+ * @author cdursun
+ * @since March 20, 2017
  */
 public class OmiaFileDownloader extends FileDownloader {
     Logger logger = LogManager.getLogger("summary");
@@ -71,16 +69,10 @@ public class OmiaFileDownloader extends FileDownloader {
         return true;
     }
 
-
-
     public void downloadFile(String localFile, String externalFile) throws Exception{
         setExternalFile(externalFile);
         setLocalFile(localFile);
         setLocalFile(downloadNew());
-    }
-
-    public int checkNumberOfLocalFiles(final String fileName){
-        return listLocalFiles(this.DATA_DIRECTORY, fileName).length;
     }
 
     public static File[] listLocalFiles(String fileDirectory, final String fileName){
@@ -92,7 +84,7 @@ public class OmiaFileDownloader extends FileDownloader {
         });
     }
 
-    public static String getTheNewestLocalFileName(String fileDirectory, String fileName) throws Exception{
+    public static String getTheNewestLocalFileName(String fileDirectory, String fileName) {
         File[] localFileList = listLocalFiles(fileDirectory, fileName);
 
         if (localFileList == null || localFileList.length == 0)
