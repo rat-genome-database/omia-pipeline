@@ -7,7 +7,6 @@ package edu.mcw.rgd.OMIAPipeline;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -15,6 +14,10 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
@@ -44,8 +47,10 @@ public class XmlParser {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-        xmlDoc = dBuilder.parse(new ByteArrayInputStream(stripNonValidXMLCharacters(IOUtils.toString(openXmlFile())).getBytes()));
+        InputStream is = openXmlFile();
+        xmlDoc = dBuilder.parse(is);
         xmlDoc.getDocumentElement().normalize();
+
         //System.out.println("xmlDoc loaded, Root element :" + xmlDoc.getDocumentElement().getNodeName());
     }
 
@@ -157,7 +162,7 @@ public class XmlParser {
     }
 
 
-    BufferedReader openXmlFile() throws IOException {
+    InputStream openXmlFile() throws IOException {
         //check if the file exist
         String localFileName = this.fileDownloader.getLocalXmlFile();
         File file=new File(localFileName);
@@ -166,8 +171,33 @@ public class XmlParser {
             return null;
         }
 
-        //return new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(localFileName))));
-        return Utils.openReaderUtf8(localFileName);
+        BufferedReader br = Utils.openReaderUtf8(localFileName);
+
+        String outName = "/tmp/omia2.xml";
+        Path path = FileSystems.getDefault().getPath(outName);
+        Charset charset = Charset.forName("UTF-8");
+        BufferedWriter writer = Files.newBufferedWriter(path, charset);
+
+        String line;
+        while( (line=br.readLine())!=null ) {
+            String line2 = stripNonValidXMLCharacters(line);
+            writer.write(line2);
+            writer.write("\n");
+        }
+        br.close();
+        writer.close();
+
+        return openStream(outName);
+    }
+
+    InputStream openStream(String fileName) throws IOException {
+        InputStream is;
+        if (!fileName.endsWith(".gz") && !fileName.contains(".gz_")) {
+            is = new FileInputStream(fileName);
+        } else {
+            is = new GZIPInputStream(new FileInputStream(fileName));
+        }
+        return is;
     }
 
     /**

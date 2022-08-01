@@ -1,3 +1,6 @@
+Aug 01, 2022
+  refactored to avoid problems with UTF-8 under Windows
+
 Jul 26, 2022
   logging tune up
 

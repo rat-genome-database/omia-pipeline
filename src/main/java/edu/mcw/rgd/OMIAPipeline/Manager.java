@@ -40,7 +40,7 @@ public class Manager {
         Manager manager= (Manager) bf.getBean("main");
         manager.init(bf);
 
-        Date time0 = Calendar.getInstance().getTime();
+        Date time0 = new Date();
 
         try {
             manager.run(time0);
