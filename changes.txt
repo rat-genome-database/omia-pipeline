@@ -1,3 +1,6 @@
+Feb 20, 2023
+  updated build.gradle to be gradle 6.x + compatible
+
 Aug 01, 2022
   refactored to avoid problems with UTF-8 under Windows
 
