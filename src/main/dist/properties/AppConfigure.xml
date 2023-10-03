@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="main" class="edu.mcw.rgd.OMIAPipeline.Manager">
-		<property name="version" value="OMIA Pipeline   -- build Feb 20, 2023" />
+		<property name="version" value="OMIA Pipeline   -- build Oct 03, 2023" />
 		<property name="omiaFileDownloader" ref="omiaFileDownloader"/>
 		<property name="xmlParser" ref="xmlParser"/>
 		<property name="tabDelimetedTextParser" ref="tabDelimetedTextParser"/>
