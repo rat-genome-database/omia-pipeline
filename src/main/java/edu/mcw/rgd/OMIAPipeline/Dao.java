@@ -85,8 +85,12 @@ public class Dao {
             return null;
         }
 
-        Annotation annotation = new Annotation();
         Gene gene = getGeneByNcbiGeneIdOrGeneSymbol(omiaRecord.getNcbiGeneId(), omiaRecord.getGeneSymbol(), speciesTypeKey);
+        if( gene==null ) {
+            return null;
+        }
+
+        Annotation annotation = new Annotation();
         annotation.setTerm(term.getTerm());
         annotation.setAnnotatedObjectRgdId(gene.getRgdId());
         annotation.setRgdObjectKey(RgdId.OBJECT_KEY_GENES);
@@ -117,11 +121,9 @@ public class Dao {
 
     /**
      * Return Gene from RGD by ncbiGeneId if ncbiGeneId is not null
-     * if ncbiGeneId is null or it can not get Gene by ncbiGeneId and if it is configured to use GeneSymbol
+     * if ncbiGeneId is null or if it cannot get Gene by ncbiGeneId and if it is configured to use GeneSymbol
      *  then it returns Gene using geneSymbol
-     * if not found at the end throws RgdIdNotFoundException
-     * @param ncbiGeneId
-     * @return
+     * @return Gene or null if not found
      * @throws Exception
      */
     public Gene getGeneByNcbiGeneIdOrGeneSymbol(String ncbiGeneId, String geneSymbol, int speciesTypeKey) throws Exception{
@@ -148,8 +150,8 @@ public class Dao {
             }
         }
 
-        // if not found using ncbiGeneId or geneSymbol then, try to get it with geneSymbol
-        throw new RgdIdNotFoundException(ncbiGeneId, geneSymbol);
+        warningLogger.info("Not Found RGD_IDs for NCBI Gene Id: " + ncbiGeneId + " - Gene Symbol:" + geneSymbol );
+        return null;
     }
 
     public String getOmiaDataSourceName() {

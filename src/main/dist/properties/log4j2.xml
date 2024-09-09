@@ -42,17 +42,6 @@
             </Policies>
         </RollingFile>
 
-        <RollingFile name="not_found_omia_genes_in_rgd" append="true" fileName="logs/not_found_omia_genes_in_rgd.log" filePattern="logs/not_found_omia_genes_in_rgd.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] - %m%n"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy interval="1"/>
-            </Policies>
-        </RollingFile>
-        <File name="not_found_omia_genes_in_rgd_summary" append="false" fileName="logs/not_found_omia_genes_in_rgd_summary.log">
-            <PatternLayout pattern="%m%n"/>
-            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
-        </File>
-
         <RollingFile name="mismatched_phenes" append="true" fileName="logs/mismatched_phenes.log" filePattern="logs/mismatched_phenes.log.%d{yyyy-MM}">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] - %m%n"/>
             <Policies>
@@ -102,11 +91,6 @@
             <AppenderRef ref="Console" level="info"/>
         </Logger>
 
-        <Logger name="not_found_omia_genes_in_rgd" level="debug" additivity="false">
-            <AppenderRef ref="not_found_omia_genes_in_rgd_summary"/>
-            <AppenderRef ref="not_found_omia_genes_in_rgd"/>
-            <AppenderRef ref="Console" level="info"/>
-        </Logger>
         <Logger name="mismatched_phenes" level="debug" additivity="false">
             <AppenderRef ref="mismatched_phenes_summary"/>
             <AppenderRef ref="mismatched_phenes"/>

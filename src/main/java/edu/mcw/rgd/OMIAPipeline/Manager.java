@@ -19,7 +19,6 @@ public class Manager {
     private String version;
 
     Logger loggerSummary = LogManager.getLogger("summary");
-    Logger loggerNotFoundNcbiGenes = LogManager.getLogger("not_found_omia_genes_in_rgd");
     Logger loggerMismatchedPheneNames =  LogManager.getLogger("mismatched_phenes");
     Logger loggerExcessPubmeds = LogManager.getLogger("excess_pubmeds");
 
@@ -183,18 +182,15 @@ public class Manager {
             String termAcc = pheneId!=null ? pheneRgdTermAccMap.get(pheneId) : omiaIdToRgdTermAccMap.get(omiaId);
 
             if (termAcc != null) {
-                try {
-                    Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr, taxonIds.get(omiaRecord.taxonId));
-                    if( annotation!=null ) {
-                        incomingAnnnotations.add(annotation);
+                Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr, taxonIds.get(omiaRecord.taxonId));
+                if( annotation!=null ) {
+                    incomingAnnnotations.add(annotation);
 
-                        if (numberOfPubmed > getMaxNumberOfPubmedIds()) {
-                            numberOfGenesHaveExcessPubmed++;
-                            loggerExcessPubmeds.info("Gene : " + omiaRecord.getNcbiGeneId() + " - Phene : " + " has " + numberOfPubmed + " Pubmed Ids");
-                        }
+                    if (numberOfPubmed > getMaxNumberOfPubmedIds()) {
+                        numberOfGenesHaveExcessPubmed++;
+                        loggerExcessPubmeds.info("Gene : " + omiaRecord.getNcbiGeneId() + " - Phene : " + " has " + numberOfPubmed + " Pubmed Ids");
                     }
-                } catch (RgdIdNotFoundException re) {
-                    loggerNotFoundNcbiGenes.info(re);
+                } else {
                     numberOfNotFoundNCBIGenesInRGD++;
                 }
             }
