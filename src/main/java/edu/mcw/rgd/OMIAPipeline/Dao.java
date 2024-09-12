@@ -9,6 +9,8 @@ import edu.mcw.rgd.datamodel.RgdId;
 import edu.mcw.rgd.datamodel.XdbId;
 import edu.mcw.rgd.datamodel.ontology.Annotation;
 import edu.mcw.rgd.datamodel.ontologyx.Term;
+import edu.mcw.rgd.datamodel.ontologyx.TermSynonym;
+import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -84,6 +86,20 @@ public class Dao {
             warningLogger.warn("WARNING: term with accession "+termAcc+" not found in database!");
             return null;
         }
+        while( term.isObsolete() ) {
+            List<TermSynonym> synonyms = ontologyXdao.getTermSynonyms(term.getAccId());
+            for( TermSynonym tsyn: synonyms ) {
+                if( Utils.stringsAreEqual(tsyn.getType(), "replaced_by") ) {
+                    String newTermAcc = tsyn.getName();
+                    term = ontologyXdao.getTermByAccId(newTermAcc);
+                    if( term==null ) {
+                        warningLogger.warn("WARNING: term with accession "+termAcc+" not found in database!");
+                        return null;
+                    }
+                    warningLogger.warn("WARNING: term with accession "+termAcc+" replaced with "+newTermAcc);
+                }
+            }
+        }
 
         Gene gene = getGeneByNcbiGeneIdOrGeneSymbol(omiaRecord.getNcbiGeneId(), omiaRecord.getGeneSymbol(), speciesTypeKey);
         if( gene==null ) {
@@ -100,7 +116,7 @@ public class Dao {
         annotation.setEvidence(getOmiaEvidenceCode());
         annotation.setAspect(ontologyXdao.getOntologyFromAccId(termAcc).getAspect());
         annotation.setObjectName(gene.getName());
-        annotation.setTermAcc(termAcc);
+        annotation.setTermAcc(term.getAccId());
         annotation.setCreatedBy(getOmiaUserKey());
         annotation.setLastModifiedBy(getOmiaUserKey());
         annotation.setXrefSource(pubmedStr);

@@ -182,6 +182,7 @@ public class Manager {
             String termAcc = pheneId!=null ? pheneRgdTermAccMap.get(pheneId) : omiaIdToRgdTermAccMap.get(omiaId);
 
             if (termAcc != null) {
+
                 Annotation annotation = dao.createNewAnnotation(termAcc, omiaRecord, pubmedStr, taxonIds.get(omiaRecord.taxonId));
                 if( annotation!=null ) {
                     incomingAnnnotations.add(annotation);

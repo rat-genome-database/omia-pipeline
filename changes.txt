@@ -1,3 +1,6 @@
+Sep 12, 2024
+  implemented handling of obsolete terms replaced with other terms
+
 Sep 09, 2024
   simplified logic (removed RgdIdNotFoundException and logger 'not_found_omia_genes_in_rgd')
 
