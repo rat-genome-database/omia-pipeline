@@ -54,11 +54,11 @@ public class Dao {
             a.setKey(key);
             a.setLastModifiedDate(runDate);
             annotationDao.updateAnnotation(a);
-            updatedLogger.info(a.dump("-"));
+            updatedLogger.info(a.dump("|"));
             return false;
         }
         annotationDao.insertAnnotation(a);
-        insertedLogger.info(a.dump("-"));
+        insertedLogger.info(a.dump("|"));
         return true;
     }
 
@@ -68,7 +68,7 @@ public class Dao {
 
         for (Annotation a : unmodifiedAnnotations) {
             annotationDao.deleteAnnotation(a.getKey());
-            deletedLogger.info(a.dump("-"));
+            deletedLogger.info(a.dump("|"));
         }
 
         return numberOfDeletedAnnotations;
