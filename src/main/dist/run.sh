@@ -7,7 +7,7 @@ APPDIR=/home/rgddata/pipelines/$APPNAME
 EMAILLIST=mtutaj@mcw.edu
 
 if [ "$SERVER" == "REED" ]; then
-  EMAILLIST=mtutaj@mcw.edu,jrsmith@mcw.edu,slaulede@mcw.edu
+  EMAILLIST="mtutaj@mcw.edu jrsmith@mcw.edu slaulede@mcw.edu"
 fi
 
 cd $APPDIR
