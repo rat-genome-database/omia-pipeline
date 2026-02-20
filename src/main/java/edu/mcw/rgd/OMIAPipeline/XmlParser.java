@@ -54,26 +54,6 @@ public class XmlParser {
         //System.out.println("xmlDoc loaded, Root element :" + xmlDoc.getDocumentElement().getNodeName());
     }
 
-    public static void printMap(Map map){
-
-        Iterator it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            System.out.println("Key = " + pair.getKey() + "  Values = " + pair.getValue());
-            it.remove(); // avoids a ConcurrentModificationException
-        }
-    }
-
-    public static void printMultimap(Multimap<Integer, Object> map){
-        // get all the set of keys
-        Set keys = map.keySet();
-        // iterate through the key set and display key and values
-        for (Object key : keys) {
-            System.out.print("Key = " + key);
-            System.out.println(" Values = " + map.get((Integer)key) + "");
-        }
-    }
-
     public Multimap<Integer, Object> readTableMultiKey(String tableName, String keyField, String valueField, boolean isValueString) {
         Multimap<Integer, Object> pairMap = ArrayListMultimap.create();
         NodeList tableDataList = xmlDoc.getElementsByTagName(getTableElementName());

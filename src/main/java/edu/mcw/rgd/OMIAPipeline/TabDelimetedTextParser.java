@@ -204,14 +204,6 @@ public class TabDelimetedTextParser {
             this.ncbiGeneId = ncbiGeneId;
         }
 
-        public Integer getOmiaId() {
-            return omiaId;
-        }
-
-        public void setOmiaId(String Integer) {
-            this.omiaId = omiaId;
-        }
-
         public String getPheneName() {
             return pheneName;
         }

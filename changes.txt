@@ -1,3 +1,6 @@
+Feb 20, 2026
+  removed dead code; updated dependencies
+
 Sep 11, 2025
 May 06, 2025
   updated dependencies
