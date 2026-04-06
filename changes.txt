@@ -1,5 +1,6 @@
 Apr 06, 2026
   added MemoryMonitor; updated dependencies
+  replaced DOM-based XmlParser with StAX streaming to eliminate 100GB memory footprint
 
 Feb 20, 2026
   removed dead code; updated dependencies
