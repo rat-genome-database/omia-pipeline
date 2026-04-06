@@ -1,29 +1,24 @@
 package edu.mcw.rgd.OMIAPipeline;
 
-/**
- * Created by cdursun on 3/14/2017.
- */
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import edu.mcw.rgd.process.Utils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * StAX-based XML parser. Streams the XML file without loading the entire DOM into memory.
+ * Each readTable/readTableMultiKey call streams through the cleaned XML file independently.
+ */
 public class XmlParser {
-    private Document xmlDoc;
     private OmiaFileDownloader fileDownloader;
+    private String cleanedXmlFile;
+
     private String tableElementName;
     private String nameAttributeName;
     private String rowElementName;
@@ -40,52 +35,34 @@ public class XmlParser {
     private String pubmedIdFieldName;
     private Set<Integer> taxonIds;
 
-    public void init(OmiaFileDownloader fileDownloader, Set<Integer> taxonIds) throws Exception{
+    public void init(OmiaFileDownloader fileDownloader, Set<Integer> taxonIds) throws Exception {
         this.fileDownloader = fileDownloader;
         this.taxonIds = taxonIds;
 
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        // pre-process: strip invalid XML characters and write a cleaned file
+        cleanedXmlFile = "/tmp/omia2.xml";
+        try (BufferedReader br = Utils.openReaderUtf8(this.fileDownloader.getLocalXmlFile());
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cleanedXmlFile), "UTF-8"))) {
 
-        InputStream is = openXmlFile();
-        xmlDoc = dBuilder.parse(is);
-        xmlDoc.getDocumentElement().normalize();
-
-        //System.out.println("xmlDoc loaded, Root element :" + xmlDoc.getDocumentElement().getNodeName());
+            String line;
+            while ((line = br.readLine()) != null) {
+                writer.write(stripNonValidXMLCharacters(line));
+                writer.write("\n");
+            }
+        }
     }
 
     public Multimap<Integer, Object> readTableMultiKey(String tableName, String keyField, String valueField, boolean isValueString) {
         Multimap<Integer, Object> pairMap = ArrayListMultimap.create();
-        NodeList tableDataList = xmlDoc.getElementsByTagName(getTableElementName());
 
-        for (int i = 0; i < tableDataList.getLength(); i++) {
-            Element tableNode = (Element) tableDataList.item(i);
-            if (tableNode.getAttribute(getNameAttributeName()).equals(tableName)) {
-                NodeList rows = tableNode.getElementsByTagName(getRowElementName());
-                for (int j = 0; j < rows.getLength(); j++) {
-                    Element row = (Element) rows.item(j);
-                    NodeList fields = row.getElementsByTagName(getFieldElementName());
-                    Integer key = null;
-                    Object value = null;
-                    for (int k = 0; k < fields.getLength(); k++) {
-                        Element field = (Element) fields.item(k);
-                        if (field.getAttribute(getNameAttributeName()).equals(keyField)) {
-                            if (field.getFirstChild() != null)
-                                key = Integer.valueOf(field.getTextContent());
-                        } else if (field.getAttribute(getNameAttributeName()).equals(valueField)) {
-                            if (field.getFirstChild() != null) {
-                                if (isValueString)
-                                    value = field.getTextContent();
-                                else
-                                    value = Integer.valueOf(field.getTextContent());
-                            }
-                        }
-                    }
-
-                    if (key !=null && value != null)
-                        pairMap.put(key, value);
+        try {
+            streamTable(tableName, keyField, valueField, isValueString, (key, value, speciesId) -> {
+                if (key != null && value != null) {
+                    pairMap.put(key, value);
                 }
-            }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading table " + tableName, e);
         }
 
         return pairMap;
@@ -93,111 +70,123 @@ public class XmlParser {
 
     public Map<Integer, Object> readTable(String tableName, String keyField, String valueField, boolean isValueString) {
         Map<Integer, Object> pairMap = new TreeMap<>();
-        NodeList tableDataList = xmlDoc.getElementsByTagName(getTableElementName());
 
-        for (int i = 0; i < tableDataList.getLength(); i++) {
-            Element tableNode = (Element) tableDataList.item(i);
-            if (tableNode.getAttribute(getNameAttributeName()).equals(tableName)) {
-                NodeList rows = tableNode.getElementsByTagName(getRowElementName());
-                for (int j = 0; j < rows.getLength(); j++) {
-                    Element row = (Element) rows.item(j);
-                    NodeList fields = row.getElementsByTagName(getFieldElementName());
-                    Integer key = null;
-                    Object value = null;
-                    Integer speciesId = null;
-                    for (int k = 0; k < fields.getLength(); k++) {
-                        Element field = (Element) fields.item(k);
-                        if (tableName.equals(getPheneTableName()) && keyField.equals(getOmiaIdFieldName()) && field.getAttribute(getNameAttributeName()).equals(getSpeciesIdFieldName()))
-                            speciesId = Integer.valueOf(field.getTextContent());
-
-                        if (field.getAttribute(getNameAttributeName()).equals(keyField)) {
-                            if (field.getFirstChild() != null)
-                                key = Integer.valueOf(field.getTextContent());
-                        } else if (field.getAttribute(getNameAttributeName()).equals(valueField)) {
-                            if (field.getFirstChild() != null) {
-                                if (isValueString)
-                                    value = field.getTextContent();
-                                else
-                                    value = Integer.valueOf(field.getTextContent());
-                            }
-                        }
-                    }
-
-                    if (tableName.equals(getPheneGeneTableName())){
-                        if (value != null){
-                            if (pairMap.get(key) == null){
-                                pairMap.put(key, value);
-                            }
-                        }
-                    }
-                    else if (speciesId != null && taxonIds.contains(speciesId.intValue()) && key != null && value != null )
+        try {
+            streamTable(tableName, keyField, valueField, isValueString, (key, value, speciesId) -> {
+                if (tableName.equals(getPheneGeneTableName())) {
+                    if (value != null && !pairMap.containsKey(key)) {
                         pairMap.put(key, value);
-                    else if (speciesId == null && key != null && value != null)
-                        pairMap.put(key, value);
+                    }
+                } else if (speciesId != null && taxonIds.contains(speciesId) && key != null && value != null) {
+                    pairMap.put(key, value);
+                } else if (speciesId == null && key != null && value != null) {
+                    pairMap.put(key, value);
                 }
-            }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading table " + tableName, e);
         }
 
         return pairMap;
     }
 
-
-    InputStream openXmlFile() throws IOException {
-        //check if the file exist
-        String localFileName = this.fileDownloader.getLocalXmlFile();
-        File file=new File(localFileName);
-        if (!file.exists()) {
-            //  processLog.error("The file "+ localFileName + " doesn't exist");
-            return null;
-        }
-
-        BufferedReader br = Utils.openReaderUtf8(localFileName);
-
-        String outName = "/tmp/omia2.xml";
-        Path path = FileSystems.getDefault().getPath(outName);
-        Charset charset = Charset.forName("UTF-8");
-        BufferedWriter writer = Files.newBufferedWriter(path, charset);
-
-        String line;
-        while( (line=br.readLine())!=null ) {
-            String line2 = stripNonValidXMLCharacters(line);
-            writer.write(line2);
-            writer.write("\n");
-        }
-        br.close();
-        writer.close();
-
-        return openStream(outName);
-    }
-
-    InputStream openStream(String fileName) throws IOException {
-        InputStream is;
-        if (!fileName.endsWith(".gz") && !fileName.contains(".gz_")) {
-            is = new FileInputStream(fileName);
-        } else {
-            is = new GZIPInputStream(new FileInputStream(fileName));
-        }
-        return is;
+    @FunctionalInterface
+    interface RowHandler {
+        void handle(Integer key, Object value, Integer speciesId);
     }
 
     /**
-     * This method ensures that the output String has only
-     * valid XML unicode characters as specified by the
-     * XML 1.0 standard. For reference, please see
-     * <a href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char">the
-     * standard</a>. This method will return an empty
-     * String if the input is null or empty.
-     *
-     * @param in The String whose non-valid characters we want to remove.
-     * @return The in String, stripped of non-valid characters.
+     * Streams through the XML file using StAX, processing only the specified table.
+     * For each row in the target table, extracts the key, value, and optional speciesId fields,
+     * then delegates to the handler.
      */
-    public String stripNonValidXMLCharacters(String in) {
-        StringBuffer out = new StringBuffer(); // Used to hold the output.
-        char current; // Used to reference the current character.
+    private void streamTable(String tableName, String keyField, String valueField, boolean isValueString, RowHandler handler) throws Exception {
 
-        if (in == null || ("".equals(in))) return ""; // vacancy test.
+        boolean trackSpeciesId = tableName.equals(getPheneTableName()) && keyField.equals(getOmiaIdFieldName());
+
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+        try (InputStream is = new FileInputStream(cleanedXmlFile)) {
+            XMLStreamReader reader = factory.createXMLStreamReader(is);
+
+            boolean inTargetTable = false;
+            boolean inRow = false;
+            String currentFieldName = null;
+            StringBuilder textBuf = new StringBuilder();
+
+            Integer key = null;
+            Object value = null;
+            Integer speciesId = null;
+
+            while (reader.hasNext()) {
+                int event = reader.next();
+
+                switch (event) {
+                    case XMLStreamConstants.START_ELEMENT:
+                        String localName = reader.getLocalName();
+
+                        if (localName.equals(tableElementName)) {
+                            String nameAttr = reader.getAttributeValue(null, nameAttributeName);
+                            inTargetTable = tableName.equals(nameAttr);
+                        } else if (inTargetTable && localName.equals(rowElementName)) {
+                            inRow = true;
+                            key = null;
+                            value = null;
+                            speciesId = null;
+                        } else if (inTargetTable && inRow && localName.equals(fieldElementName)) {
+                            currentFieldName = reader.getAttributeValue(null, nameAttributeName);
+                            textBuf.setLength(0);
+                        }
+                        break;
+
+                    case XMLStreamConstants.CHARACTERS:
+                        if (inTargetTable && inRow && currentFieldName != null) {
+                            textBuf.append(reader.getText());
+                        }
+                        break;
+
+                    case XMLStreamConstants.END_ELEMENT:
+                        String endName = reader.getLocalName();
+
+                        if (endName.equals(fieldElementName)) {
+                            if (inTargetTable && inRow && currentFieldName != null) {
+                                String text = textBuf.toString().trim();
+                                if (!text.isEmpty()) {
+                                    if (currentFieldName.equals(keyField)) {
+                                        key = Integer.valueOf(text);
+                                    } else if (currentFieldName.equals(valueField)) {
+                                        if (isValueString) {
+                                            value = text;
+                                        } else {
+                                            value = Integer.valueOf(text);
+                                        }
+                                    }
+                                    if (trackSpeciesId && currentFieldName.equals(speciesIdFieldName)) {
+                                        speciesId = Integer.valueOf(text);
+                                    }
+                                }
+                            }
+                            currentFieldName = null;
+                        } else if (inTargetTable && endName.equals(rowElementName)) {
+                            handler.handle(key, value, speciesId);
+                            inRow = false;
+                        } else if (endName.equals(tableElementName)) {
+                            if (inTargetTable) {
+                                reader.close();
+                                return;
+                            }
+                        }
+                        break;
+                }
+            }
+            reader.close();
+        }
+    }
+
+    public String stripNonValidXMLCharacters(String in) {
+        if (in == null || in.isEmpty()) return "";
+        StringBuilder out = new StringBuilder(in.length());
         for (int i = 0; i < in.length(); i++) {
-            current = in.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
+            char current = in.charAt(i);
             if ((current == 0x9) ||
                     (current == 0xA) ||
                     (current == 0xD) ||

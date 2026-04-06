@@ -3,6 +3,7 @@ package edu.mcw.rgd.OMIAPipeline;
 import com.google.common.collect.Multimap;
 import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.datamodel.ontology.Annotation;
+import edu.mcw.rgd.process.MemoryMonitor;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,11 +42,17 @@ public class Manager {
 
         Date time0 = new Date();
 
+        MemoryMonitor memoryMonitor = new MemoryMonitor();
+        memoryMonitor.start();
+
         try {
             manager.run(time0);
         } catch (Exception e) {
             Utils.printStackTrace(e, manager.loggerSummary);
             throw e;
+        } finally {
+            memoryMonitor.stop();
+            manager.loggerSummary.info(memoryMonitor.getSummary());
         }
 
         manager.loggerSummary.info("========== Elapsed time " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + ". ==========");
