@@ -1,3 +1,7 @@
+Apr 13, 2026
+  updated README.md
+  run.sh: removed -Xmx128G (no longer needed since StAX streaming replaced DOM-based XML parser)
+
 Apr 06, 2026
   added MemoryMonitor; updated dependencies
   replaced DOM-based XmlParser with StAX streaming to eliminate 100GB memory footprint
