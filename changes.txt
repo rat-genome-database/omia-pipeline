@@ -1,3 +1,6 @@
+Apr 22, 2026
+  tuned up logging; updated dependencies
+
 Apr 13, 2026
   updated README.md
   run.sh: removed -Xmx128G (no longer needed since StAX streaming replaced DOM-based XML parser)

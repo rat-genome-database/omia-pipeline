@@ -55,7 +55,7 @@ public class Manager {
             manager.loggerSummary.info(memoryMonitor.getSummary());
         }
 
-        manager.loggerSummary.info("========== Elapsed time " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + ". ==========");
+        manager.loggerSummary.info("========== Elapsed time " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + " ==========\n");
     }
 
     /** LOGIC:
